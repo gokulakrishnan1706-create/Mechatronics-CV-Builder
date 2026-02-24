@@ -1,0 +1,528 @@
+import React, { useRef, useState } from 'react';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { ArrowRight, Sparkles, Target, Zap, Layout, FileText, CheckCircle, ChevronDown, Star, Shield, Cpu, RefreshCw, XCircle, Users } from 'lucide-react';
+
+const fadeUp = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+};
+
+const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.15 } }
+};
+
+export default function Homepage({ onStartBuilding }) {
+    const heroRef = useRef(null);
+    const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+    const yHero = useTransform(scrollYProgress, [0, 1], [0, 200]);
+    const opacityHero = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+
+    const [activeFaq, setActiveFaq] = useState(null);
+
+    const faqs = [
+        { q: "How is this different from standard resume builders?", a: "Most builders just give you templates. Our engine actively rewrites and synthesizes your career history to match specific Job Descriptions, ensuring maximum ATS and human resonance." },
+        { q: "Is my data secure?", a: "Yes. All processing happens locally in your browser and through secure API calls. We do not store your data on our servers." },
+        { q: "Does the PDF export pass ATS systems?", a: "Absolutely. Our PDF engine (pdfMake) ensures true text extraction and semantic structuring, eliminating the parsing errors common in canvas-based exports." },
+        { q: "Can I edit the AI-generated content?", a: "Yes, the Builder Workspace gives you complete control to tweak, revert, or regenerate any section before final export." }
+    ];
+
+    return (
+        <div className="min-h-screen bg-aura-bg text-aura-text font-sans selection:bg-aura-primary/30 selection:text-white overflow-x-hidden">
+
+            {/* Ambient Background Glows */}
+            <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-aura-primary/20 rounded-full blur-[120px] mix-blend-screen opacity-50 animate-pulse-slow"></div>
+                <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-aura-accent/20 rounded-full blur-[150px] mix-blend-screen opacity-40"></div>
+                <div className="absolute top-[40%] left-[60%] w-[30%] h-[30%] bg-aura-glow/20 rounded-full blur-[100px] mix-blend-screen opacity-30"></div>
+            </div>
+
+            {/* Navbar */}
+            <nav className="fixed top-0 w-full z-50 glass-card rounded-none border-x-0 border-t-0 flex justify-between items-center px-8 py-5">
+                <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-aura-primary to-aura-glow flex items-center justify-center">
+                        <Sparkles className="w-4 h-4 text-white" />
+                    </div>
+                    <span className="font-bold text-xl tracking-tight text-white">Gokul CV</span>
+                </div>
+                <div className="hidden md:flex items-center gap-6">
+                    <a href="#features" className="text-sm font-medium text-aura-muted hover:text-white transition-colors">Features</a>
+                    <a href="#demo" className="text-sm font-medium text-aura-muted hover:text-white transition-colors">Workflow</a>
+                    <a href="#compare" className="text-sm font-medium text-aura-muted hover:text-white transition-colors">Compare</a>
+                    <a href="#faq" className="text-sm font-medium text-aura-muted hover:text-white transition-colors">FAQ</a>
+                </div>
+                <button
+                    onClick={onStartBuilding}
+                    className="text-sm font-semibold tracking-wide text-white bg-white/10 hover:bg-white/20 border border-white/10 px-5 py-2.5 rounded-full transition-all active:scale-95 flex items-center gap-2"
+                >
+                    Builder Access <ArrowRight className="w-4 h-4" />
+                </button>
+            </nav>
+
+            {/* 1. Hero Section */}
+            <section ref={heroRef} className="relative pt-44 pb-20 px-6 overflow-hidden flex flex-col items-center text-center z-10 min-h-screen justify-center">
+                <motion.div
+                    style={{ y: yHero, opacity: opacityHero }}
+                    className="max-w-5xl mx-auto flex flex-col items-center"
+                >
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.8, ease: "easeOut" }}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card mb-8 border-aura-primary/30 text-aura-accent text-sm font-medium tracking-wide shadow-[0_0_20px_rgba(139,92,246,0.15)]"
+                    >
+                        <Sparkles className="w-4 h-4" />
+                        <span>The Next Generation Resume Synthesizer</span>
+                    </motion.div>
+
+                    <motion.h1
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.1 }}
+                        className="text-6xl md:text-8xl lg:text-[6.5rem] font-bold tracking-tighter leading-[1.05] mb-8"
+                    >
+                        Crafted for the <br />
+                        <span className="aurora-text">Modern Executive</span>
+                    </motion.h1>
+
+                    <motion.p
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.2 }}
+                        className="text-xl md:text-2xl text-aura-muted max-w-2xl font-light leading-relaxed mb-12"
+                    >
+                        Beyond simple tailoring. We synthesize your career history into a high-impact, ATS-optimized narrative designed to win at the highest level.
+                    </motion.p>
+
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.3 }}
+                        className="flex flex-col sm:flex-row items-center gap-4 w-full justify-center"
+                    >
+                        <button
+                            onClick={onStartBuilding}
+                            className="primary-btn w-full sm:w-auto text-lg"
+                        >
+                            Launch Engine
+                            <ArrowRight className="w-5 h-5 ml-2" />
+                        </button>
+                    </motion.div>
+                </motion.div>
+
+                {/* Hero Visual Mockup */}
+                <motion.div
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 1, delay: 0.5 }}
+                    className="w-full max-w-6xl mx-auto mt-24 glass-card h-[300px] md:h-[500px] relative rounded-t-3xl overflow-hidden border-b-0 border-white/10 shadow-[0_-20px_80px_rgba(139,92,246,0.15)]"
+                >
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#0A0A0A] to-aura-bg"></div>
+                    {/* Mockup UI Interface visual */}
+                    <div className="absolute top-0 w-full h-12 border-b border-white/5 flex items-center px-6 gap-2 bg-[#111]">
+                        <div className="flex gap-1.5">
+                            <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
+                            <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                            <div className="w-3 h-3 rounded-full bg-emerald-500/80"></div>
+                        </div>
+                    </div>
+                    <div className="absolute inset-0 top-12 p-8 flex gap-8">
+                        {/* Sidebar Mock */}
+                        <div className="w-64 h-full rounded-xl border border-white/5 bg-[#0D0D0D] p-4 flex flex-col gap-4">
+                            <div className="w-full h-8 rounded-lg bg-[#1A1A1A]"></div>
+                            <div className="w-3/4 h-3 rounded bg-white/10 mt-4"></div>
+                            <div className="w-1/2 h-3 rounded bg-aura-primary/40"></div>
+                            <div className="w-full h-24 rounded-lg bg-[#1A1A1A] mt-auto"></div>
+                        </div>
+                        {/* Content Mock */}
+                        <div className="flex-1 h-full rounded-xl border border-white/5 bg-[#111] p-10 flex flex-col gap-6 relative shadow-2xl">
+                            <div className="absolute right-0 top-0 w-64 h-64 bg-aura-glow/10 rounded-full blur-[80px]"></div>
+                            <div className="w-1/3 h-8 rounded bg-white/20"></div>
+                            <div className="w-full h-3 flex gap-2">
+                                <div className="h-full w-24 rounded bg-white/10"></div>
+                                <div className="h-full w-32 rounded bg-white/10"></div>
+                                <div className="h-full w-20 rounded bg-white/10"></div>
+                            </div>
+                            <div className="w-full h-px bg-white/5 my-2"></div>
+                            <div className="w-full h-40 rounded-lg bg-[#1A1A1A] border border-white/5"></div>
+                        </div>
+                    </div>
+                </motion.div>
+            </section>
+
+            {/* 2. Social Proof / Logos */}
+            <motion.section
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8 }}
+                className="py-12 border-y border-white/5 bg-[#050505] relative z-10 w-full overflow-hidden"
+            >
+                <p className="text-center text-sm text-aura-muted font-medium mb-8 uppercase tracking-widest">Synthesized Resumes Hired By</p>
+                <div className="flex overflow-hidden group">
+                    <div className="flex space-x-12 md:space-x-24 animate-loop-scroll group-hover:paused">
+                        {[1, 2, 3, 4, 5, 6, 7].map((num) => (
+                            <div key={num} className="text-white/20 hover:text-white/60 transition-colors font-bold text-2xl flex items-center justify-center min-w-[120px]">
+                                BRAND LOGO
+                            </div>
+                        ))}
+                        {/* Duplicate for seamless scroll */}
+                        {[1, 2, 3, 4, 5, 6, 7].map((num) => (
+                            <div key={`dup-${num}`} className="text-white/20 hover:text-white/60 transition-colors font-bold text-2xl flex items-center justify-center min-w-[120px]">
+                                BRAND LOGO
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </motion.section>
+
+            {/* 3. Features / Bento Grid */}
+            <section id="features" className="py-32 px-6 relative z-10">
+                <div className="max-w-7xl mx-auto">
+                    <div className="text-center mb-20">
+                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-aura-accent/30 bg-aura-accent/10 text-aura-accent text-xs font-bold tracking-widest uppercase mb-4">
+                            Platform Features
+                        </div>
+                        <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">Engineered for Success</h2>
+                        <p className="text-xl text-aura-muted max-w-2xl mx-auto">Every component is meticulously designed to bypass ATS algorithms and captivate human recruiters.</p>
+                    </div>
+
+                    <motion.div
+                        variants={staggerContainer}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true, margin: "-100px" }}
+                        className="grid grid-cols-1 md:grid-cols-3 gap-6"
+                    >
+                        {/* Feature 1 */}
+                        <motion.div variants={fadeUp} className="glass-card p-8 md:col-span-2 group hover:border-aura-primary/40 transition-colors">
+                            <div className="w-12 h-12 rounded-xl bg-aura-primary/20 flex items-center justify-center mb-6 group-hover:bg-aura-primary/30 transition-colors">
+                                <Target className="w-6 h-6 text-aura-primary" />
+                            </div>
+                            <h3 className="text-2xl font-bold mb-3 text-white">Neural Alignment Match Engine</h3>
+                            <p className="text-aura-muted leading-relaxed text-lg max-w-xl">Our proprietary AI engine reads your target job descriptions and dynamically restructures your professional history to hit the exact resonance frequency required by the role.</p>
+                        </motion.div>
+
+                        {/* Feature 2 */}
+                        <motion.div variants={fadeUp} className="glass-card p-8 group hover:border-aura-accent/40 transition-colors">
+                            <div className="w-12 h-12 rounded-xl bg-aura-accent/20 flex items-center justify-center mb-6 group-hover:bg-aura-accent/30 transition-colors">
+                                <Zap className="w-6 h-6 text-aura-accent" />
+                            </div>
+                            <h3 className="text-2xl font-bold mb-3 text-white">Instant Synthesis</h3>
+                            <p className="text-aura-muted leading-relaxed">Turn years of scattered experience into a focused, potent executive summary in milliseconds.</p>
+                        </motion.div>
+
+                        {/* Feature 3 */}
+                        <motion.div variants={fadeUp} className="glass-card p-8 group hover:border-emerald-500/40 transition-colors">
+                            <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center mb-6 group-hover:bg-emerald-500/30 transition-colors">
+                                <Shield className="w-6 h-6 text-emerald-400" />
+                            </div>
+                            <h3 className="text-2xl font-bold mb-3 text-white">ATS-Flawless Vectors</h3>
+                            <p className="text-aura-muted leading-relaxed">Premium PDF generation built strictly with semantic structures guaranteeing zero parse errors in major ATS systems.</p>
+                        </motion.div>
+
+                        {/* Feature 4 */}
+                        <motion.div variants={fadeUp} className="glass-card p-8 md:col-span-2 relative overflow-hidden group hover:border-white/20 transition-colors">
+                            <div className="absolute right-0 bottom-0 w-64 h-64 bg-gradient-to-br from-aura-primary to-aura-accent blur-[100px] opacity-20 group-hover:opacity-40 transition-opacity"></div>
+                            <div className="relative z-10 text-white flex flex-col justify-center h-full">
+                                <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-6">
+                                    <Layout className="w-6 h-6 text-white" />
+                                </div>
+                                <h3 className="text-3xl font-bold mb-4">Complete IDE-Style Control.</h3>
+                                <p className="text-lg text-white/70 max-w-md mb-6">Edit seamlessly in a professional workspace. View your raw data and the final rendered PDF side by side in perfect synthesis.</p>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                </div>
+            </section>
+
+            {/* 4. Comparison Section (Us vs Them) */}
+            <section id="compare" className="py-24 px-6 relative z-10 bg-[#0A0A0A] border-y border-white/5">
+                <div className="max-w-5xl mx-auto">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6 }}
+                        className="text-center mb-16"
+                    >
+                        <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">Why upgrade?</h2>
+                        <p className="text-lg text-aura-muted">Stop using outdated word processors.</p>
+                    </motion.div>
+
+                    <div className="grid md:grid-cols-2 gap-8">
+                        {/* The Old Way */}
+                        <motion.div
+                            initial={{ opacity: 0, x: -30 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.6, delay: 0.2 }}
+                            className="glass-card p-8 border-red-500/20 bg-red-500/5 relative overflow-hidden"
+                        >
+                            <div className="absolute top-0 inset-x-0 h-1 bg-red-500/30"></div>
+                            <h3 className="text-2xl font-bold mb-6 text-white flex items-center gap-3">
+                                <XCircle className="w-6 h-6 text-red-500" />
+                                Standard Builders
+                            </h3>
+                            <ul className="space-y-4">
+                                {['Static templates that break easily', 'Manual keyword stuffing required', 'No feedback on Job Description match', 'Fails ATS visual parsing systems', 'Generic, uninspiring layouts'].map((item, i) => (
+                                    <li key={i} className="flex items-start gap-3 text-aura-muted">
+                                        <XCircle className="w-5 h-5 text-red-500/50 shrink-0 mt-0.5" />
+                                        <span>{item}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </motion.div>
+
+                        {/* Gokul CV */}
+                        <motion.div
+                            initial={{ opacity: 0, x: 30 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.6, delay: 0.4 }}
+                            className="glass-card p-8 border-emerald-500/30 bg-emerald-500/10 relative overflow-hidden shadow-[0_0_40px_rgba(16,185,129,0.1)]"
+                        >
+                            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-400 to-teal-400"></div>
+                            <h3 className="text-2xl font-bold mb-6 text-white flex items-center gap-3">
+                                <CheckCircle className="w-6 h-6 text-emerald-400" />
+                                Gokul CV
+                            </h3>
+                            <ul className="space-y-4">
+                                {['AI synthesizes dynamic narratives', 'Automated targeted keyword embedding', 'Live match score & missing keywords', 'Guaranteed ATS semantic vector exports', 'Premium minimalist aesthetic'].map((item, i) => (
+                                    <li key={i} className="flex items-start gap-3 text-white font-medium">
+                                        <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                                        <span>{item}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </motion.div>
+                    </div>
+                </div>
+            </section>
+
+            {/* 5. How It Works / Stepper */}
+            <section id="demo" className="py-32 px-6 relative z-10">
+                <div className="max-w-4xl mx-auto">
+                    <div className="text-center mb-20">
+                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-aura-glow/30 bg-aura-glow/10 text-aura-glow text-xs font-bold tracking-widest uppercase mb-4">
+                            Workflow
+                        </div>
+                        <h2 className="text-4xl md:text-5xl font-bold text-center tracking-tight">The Deployment Process</h2>
+                    </div>
+
+                    <div className="space-y-12">
+                        {[
+                            { step: '01', title: 'Data Initialization', desc: 'Input your raw career history in our robust IDE workspace. Focus purely on data and metrics.', icon: <FileText className="w-6 h-6 text-aura-primary" /> },
+                            { step: '02', title: 'Contextual Targeting', desc: 'Provide the specific job description. The Match Engine parses it to set algorithmic alignment vectors.', icon: <Target className="w-6 h-6 text-aura-accent" /> },
+                            { step: '03', title: 'Executive Synthesis', desc: 'The AI rewrites and elevates your bullets, surfacing the most critical impacts and tracking missing keywords.', icon: <Cpu className="w-6 h-6 text-aura-glow" /> },
+                            { step: '04', title: 'Production Export', desc: 'Review the side-by-side preview, make final tweaks, and export a flawless PDF ready for deployment.', icon: <CheckCircle className="w-6 h-6 text-emerald-400" /> }
+                        ].map((item, idx) => (
+                            <motion.div
+                                key={idx}
+                                initial={{ opacity: 0, x: -20 }}
+                                whileInView={{ opacity: 1, x: 0 }}
+                                viewport={{ once: true, margin: "-50px" }}
+                                transition={{ duration: 0.5, delay: idx * 0.1 }}
+                                className="flex gap-6 md:gap-8 items-start relative"
+                            >
+                                {/* Vertical Line Connection */}
+                                {idx !== 3 && <div className="absolute left-8 top-16 bottom-[-32px] w-px bg-white/10 hidden md:block"></div>}
+
+                                <div className="hidden md:flex flex-col items-center">
+                                    <div className="w-16 h-16 rounded-2xl glass-card flex items-center justify-center font-mono text-xl font-bold text-white/50 border-white/10 shadow-lg relative z-10 bg-[#0F0C29]">
+                                        {item.step}
+                                    </div>
+                                </div>
+                                <div className="flex-1 glass-card p-8 rounded-2xl hover:border-white/20 transition-colors">
+                                    <div className="flex items-center gap-4 mb-3">
+                                        <div className="p-2 bg-white/5 rounded-lg border border-white/5 md:hidden">
+                                            {item.icon}
+                                        </div>
+                                        <h3 className="text-2xl font-semibold text-white tracking-tight">{item.title}</h3>
+                                    </div>
+                                    <p className="text-aura-muted text-lg leading-relaxed">{item.desc}</p>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* 6. Testimonials / Minimal Proof */}
+            <section className="py-24 px-6 relative z-10 border-y border-white/5 bg-[#080808]">
+                <div className="max-w-6xl mx-auto">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6 }}
+                        className="text-center mb-16"
+                    >
+                        <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">Results Speak</h2>
+                    </motion.div>
+                    <motion.div
+                        variants={staggerContainer}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true, margin: "-100px" }}
+                        className="grid md:grid-cols-3 gap-6"
+                    >
+                        {[
+                            { quote: "The AI didn't just add keywords, it completely rewrote my achievements to sound like a senior executive.", name: "Sarah J.", role: "Senior Product Manager" },
+                            { quote: "Highest ATS match score I've ever gotten. Landed 4 interviews in the first week of using the generated PDF.", name: "Michael T.", role: "Lead Software Engineer" },
+                            { quote: "Finally, a resume builder that treats you like a professional. The IDE-style interface is a game changer.", name: "Elena R.", role: "Data Scientist" }
+                        ].map((t, idx) => (
+                            <motion.div key={idx} variants={fadeUp} className="glass-card p-8 flex flex-col justify-between">
+                                <div>
+                                    <div className="flex gap-1 mb-4">
+                                        {[1, 2, 3, 4, 5].map(star => <Star key={star} className="w-4 h-4 text-yellow-500 fill-yellow-500" />)}
+                                    </div>
+                                    <p className="text-white/80 leading-relaxed mb-8 italic">"{t.quote}"</p>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-aura-primary/30 to-aura-accent/30 flex items-center justify-center border border-white/10">
+                                        <Users className="w-5 h-5 text-white/50" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-white text-sm">{t.name}</h4>
+                                        <p className="text-xs text-aura-muted">{t.role}</p>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </motion.div>
+                </div>
+            </section>
+
+            {/* 7. FAQ Section */}
+            <section id="faq" className="py-32 px-6 relative z-10 max-w-3xl mx-auto">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6 }}
+                    className="text-center mb-16"
+                >
+                    <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">Frequently Asked Questions</h2>
+                </motion.div>
+                <motion.div
+                    variants={staggerContainer}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, margin: "-50px" }}
+                    className="space-y-4"
+                >
+                    {faqs.map((faq, idx) => (
+                        <motion.div key={idx} variants={fadeUp} className="glass-card border border-white/5 overflow-hidden transition-all duration-300">
+                            <button
+                                onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
+                                className="w-full flex items-center justify-between p-6 text-left hover:bg-white/5 transition-colors focus:outline-none"
+                            >
+                                <span className="font-semibold text-lg text-white">{faq.q}</span>
+                                <ChevronDown className={`w-5 h-5 text-aura-muted transition-transform duration-300 ${activeFaq === idx ? 'rotate-180 text-aura-primary' : ''}`} />
+                            </button>
+                            <AnimatePresence>
+                                {activeFaq === idx && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: "auto", opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        className="px-6 pb-6 text-aura-muted leading-relaxed border-t border-white/5 pt-4"
+                                    >
+                                        {faq.a}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </motion.div>
+                    ))}
+                </motion.div>
+            </section>
+
+            {/* 8. Bottom CTA */}
+            <section className="py-32 px-6 relative z-10 overflow-hidden border-t border-white/5">
+                <div className="absolute inset-0 bg-gradient-to-t from-aura-primary/10 to-transparent pointer-events-none"></div>
+                <div className="max-w-4xl mx-auto text-center relative z-10 glass-card p-12 md:p-20 rounded-3xl border-aura-primary/20 shadow-[0_0_80px_rgba(139,92,246,0.1)]">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.8 }}
+                    >
+                        <h2 className="text-4xl md:text-6xl font-bold tracking-tighter mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70">
+                            Deploy your next <br /> career iteration.
+                        </h2>
+                        <p className="text-lg text-aura-muted mb-10 max-w-xl mx-auto">Skip the manual formatting. Get a synthesized, high-impact resume in minutes.</p>
+                        <button
+                            onClick={onStartBuilding}
+                            className="primary-btn text-lg px-10 py-4 shadow-[0_0_40px_rgba(139,92,246,0.4)]"
+                        >
+                            <Sparkles className="w-5 h-5 mr-2" />
+                            Build Your CV Free
+                        </button>
+                    </motion.div>
+                </div>
+            </section>
+
+            {/* 9. Expanded Footer */}
+            <motion.footer
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8 }}
+                className="border-t border-white/10 pt-20 pb-10 px-6 bg-[#030303] relative z-10"
+            >
+                <div className="max-w-7xl mx-auto">
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-10 mb-16">
+                        <div className="col-span-2">
+                            <div className="flex items-center gap-2 mb-6">
+                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-aura-primary to-aura-glow flex items-center justify-center">
+                                    <Sparkles className="w-4 h-4 text-white" />
+                                </div>
+                                <span className="font-bold text-xl text-white">Gokul CV</span>
+                            </div>
+                            <p className="text-aura-muted text-sm leading-relaxed max-w-xs mb-6">
+                                Premium AI-driven resume synthesis for the modern executive. Built for high-impact resonance and flawless ATS parsing.
+                            </p>
+                        </div>
+
+                        <div>
+                            <h4 className="font-bold text-white mb-4">Platform</h4>
+                            <ul className="space-y-3 text-sm text-aura-muted">
+                                <li><a href="#" className="hover:text-white transition-colors">Builder IDE</a></li>
+                                <li><a href="#" className="hover:text-white transition-colors">AI Match Engine</a></li>
+                                <li><a href="#" className="hover:text-white transition-colors">PDF Export Engine</a></li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h4 className="font-bold text-white mb-4">Resources</h4>
+                            <ul className="space-y-3 text-sm text-aura-muted">
+                                <li><a href="#" className="hover:text-white transition-colors">Documentation</a></li>
+                                <li><a href="#" className="hover:text-white transition-colors">ATS Guidelines</a></li>
+                                <li><a href="#" className="hover:text-white transition-colors">Career Blog</a></li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h4 className="font-bold text-white mb-4">Legal</h4>
+                            <ul className="space-y-3 text-sm text-aura-muted">
+                                <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
+                                <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
+                                <li><a href="#" className="hover:text-white transition-colors">Contact Support</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                        <p className="text-aura-muted text-xs">© {new Date().getFullYear()} Gokulakrishnan Balaiya. All rights reserved.</p>
+                        <div className="flex items-center gap-1.5 text-xs text-aura-muted">
+                            <span>Status:</span>
+                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                            <span className="text-emerald-400">All Systems Operational</span>
+                        </div>
+                    </div>
+                </div>
+            </motion.footer>
+        </div>
+    );
+}
