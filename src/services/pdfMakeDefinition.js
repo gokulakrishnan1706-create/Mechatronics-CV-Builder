@@ -1,20 +1,21 @@
 // ============================================================
 // PDF DOCUMENT DEFINITION GENERATOR
+// Harvard Business School / Top-Tier Executive Standard
 // Pure data — no pdfMake import. pdfMake is loaded dynamically
 // in BuilderWorkspace.jsx to avoid Vite ESM deadlock.
 // ============================================================
 
 const LAYOUT = {
-    PAGE_MARGIN: [40, 36, 40, 36],
+    PAGE_MARGIN: [45, 45, 45, 45],
     NAME_SIZE: 22,
-    CONTACT_SIZE: 8,
-    SECTION_HEADER_SIZE: 9,
+    CONTACT_SIZE: 8.5,
+    SECTION_HEADER_SIZE: 10,
     BODY_SIZE: 9,
     ENTRY_TITLE_SIZE: 9.5,
     ROLE_SIZE: 8.5,
     BULLET_SIZE: 8.5,
-    LINE_HEIGHT: 1.45,
-    SECTION_GAP: 12,
+    LINE_HEIGHT: 1.4,
+    SECTION_GAP: 14,
     ENTRY_GAP: 10,
     BULLET_GAP: 2,
 };
@@ -78,32 +79,35 @@ export const generatePdfMakeDefinition = (resumeData) => {
 
     const content = [];
 
-    // ═══ 1. NAME ═══
+    // ═══ 1. NAME (Centered, Uppercase) ═══
     content.push({
-        text: stripHtml(p.name || 'Untitled'),
+        text: stripHtml(p.name || 'Untitled').toUpperCase(),
         fontSize: L.NAME_SIZE,
         bold: true,
         color: '#000000',
-        margin: [0, 0, 0, 4]
+        alignment: 'center',
+        characterSpacing: 0.8,
+        margin: [0, 0, 0, 5]
     });
 
-    // ═══ 2. CONTACT INFO ═══
+    // ═══ 2. CONTACT INFO (Centered, pipe-separated) ═══
     const contactParts = [
         p.email, p.phone, p.location, p.linkedin ? 'LinkedIn' : null
     ].filter(Boolean);
 
     if (contactParts.length > 0) {
         content.push({
-            text: contactParts.join('  •  '),
+            text: contactParts.join('  |  '),
             fontSize: L.CONTACT_SIZE,
-            color: '#444444',
-            margin: [0, 0, 0, 10]
+            color: '#334155',
+            alignment: 'center',
+            margin: [0, 0, 0, 8]
         });
     }
 
-    // ═══ 3. HEADER RULE ═══
+    // ═══ 3. HEADER RULE (2pt solid black) ═══
     content.push({
-        canvas: [{ type: 'line', x1: 0, y1: 0, x2: LINE_W, y2: 0, lineWidth: 2, lineColor: '#111111' }],
+        canvas: [{ type: 'line', x1: 0, y1: 0, x2: LINE_W, y2: 0, lineWidth: 2, lineColor: '#000000' }],
         margin: [0, 0, 0, L.SECTION_GAP]
     });
 
@@ -112,25 +116,25 @@ export const generatePdfMakeDefinition = (resumeData) => {
         content.push({
             text: stripHtml(d.personal_profile),
             fontSize: L.BODY_SIZE,
-            color: '#222222',
-            lineHeight: 1.55,
+            color: '#1e293b',
+            lineHeight: 1.5,
             alignment: 'justify',
             margin: [0, 0, 0, L.SECTION_GAP]
         });
     }
 
-    // Helper: Section Header
+    // Helper: Section Header (ALL-CAPS, 1px solid black underline)
     const addSectionHeader = (title) => {
         content.push({
             text: title.toUpperCase(),
             fontSize: L.SECTION_HEADER_SIZE,
             bold: true,
             color: '#000000',
-            characterSpacing: 1.2,
-            margin: [0, 0, 0, 2]
+            characterSpacing: 1.8,
+            margin: [0, 2, 0, 3]
         });
         content.push({
-            canvas: [{ type: 'line', x1: 0, y1: 0, x2: LINE_W, y2: 0, lineWidth: 0.5, lineColor: '#bbbbbb' }],
+            canvas: [{ type: 'line', x1: 0, y1: 0, x2: LINE_W, y2: 0, lineWidth: 0.75, lineColor: '#000000' }],
             margin: [0, 0, 0, 8]
         });
     };
@@ -142,45 +146,60 @@ export const generatePdfMakeDefinition = (resumeData) => {
         d.work_experience.forEach((job, index) => {
             const isLast = index === d.work_experience.length - 1;
 
-            content.push({
+            // Build the entire entry block as an unbreakable stack
+            const entryStack = [];
+
+            // Row 1: Company (bold) — Dates (right)
+            entryStack.push({
                 columns: [
                     { text: stripHtml(job.company), fontSize: L.ENTRY_TITLE_SIZE, bold: true, color: '#000000' },
-                    { text: stripHtml(job.period), fontSize: L.BODY_SIZE - 0.5, bold: true, color: '#111111', alignment: 'right' }
+                    { text: stripHtml(job.period), fontSize: L.BODY_SIZE, color: '#334155', alignment: 'right' }
                 ],
                 margin: [0, 0, 0, 1]
             });
 
-            content.push({
+            // Row 2: Role (italic)
+            entryStack.push({
                 text: stripHtml(job.role),
                 fontSize: L.ROLE_SIZE,
                 italics: true,
-                color: '#333333',
-                margin: [0, 0, 0, 4]
+                color: '#334155',
+                margin: [0, 0, 0, 3]
             });
 
+            // Context paragraph
             if (job.context) {
-                content.push({
+                entryStack.push({
                     text: stripHtml(job.context),
                     fontSize: L.BODY_SIZE - 0.5,
-                    color: '#444444',
+                    color: '#475569',
                     lineHeight: 1.45,
-                    margin: [0, 0, 0, 4]
+                    alignment: 'justify',
+                    margin: [0, 0, 0, 3]
                 });
             }
 
+            // Bullet achievements
             const validAchievements = (job.achievements || []).filter(a => stripHtml(a).trim().length > 0);
             if (validAchievements.length > 0) {
-                content.push({
+                entryStack.push({
                     ul: validAchievements.map(a => ({
                         text: stripHtml(a),
                         fontSize: L.BULLET_SIZE,
-                        color: '#222222',
+                        color: '#1e293b',
                         lineHeight: 1.45,
                         margin: [0, 0, 0, L.BULLET_GAP]
                     })),
-                    margin: [0, 2, 0, isLast ? L.SECTION_GAP : L.ENTRY_GAP]
+                    margin: [0, 2, 0, 0]
                 });
             }
+
+            // Push as UNBREAKABLE block
+            content.push({
+                unbreakable: true,
+                stack: entryStack,
+                margin: [0, 0, 0, isLast ? L.SECTION_GAP : L.ENTRY_GAP]
+            });
         });
     }
 
@@ -191,36 +210,43 @@ export const generatePdfMakeDefinition = (resumeData) => {
         d.education.forEach((edu, index) => {
             const isLast = index === d.education.length - 1;
 
-            content.push({
+            const entryStack = [];
+
+            entryStack.push({
                 columns: [
                     { text: stripHtml(edu.institution), fontSize: L.ENTRY_TITLE_SIZE, bold: true, color: '#000000' },
-                    { text: stripHtml(edu.period), fontSize: L.BODY_SIZE - 0.5, bold: true, color: '#111111', alignment: 'right' }
+                    { text: stripHtml(edu.period), fontSize: L.BODY_SIZE, color: '#334155', alignment: 'right' }
                 ],
                 margin: [0, 0, 0, 1]
             });
 
-            content.push({
+            entryStack.push({
                 text: stripHtml(edu.degree),
                 fontSize: L.ROLE_SIZE,
                 italics: true,
-                color: '#222222',
+                color: '#334155',
                 margin: [0, 0, 0, 3]
             });
 
             const validBullets = (edu.bullets || []).filter(b => stripHtml(b).trim().length > 0);
             if (validBullets.length > 0) {
-                content.push({
+                entryStack.push({
                     ul: validBullets.map(b => ({
                         text: stripHtml(b),
                         fontSize: L.BULLET_SIZE,
-                        color: '#333333',
+                        color: '#1e293b',
                         lineHeight: 1.45,
                         margin: [0, 0, 0, L.BULLET_GAP]
                     })),
-                    markerColor: '#666666',
-                    margin: [0, 2, 0, isLast ? L.SECTION_GAP : L.ENTRY_GAP]
+                    margin: [0, 2, 0, 0]
                 });
             }
+
+            content.push({
+                unbreakable: true,
+                stack: entryStack,
+                margin: [0, 0, 0, isLast ? L.SECTION_GAP : L.ENTRY_GAP]
+            });
         });
     }
 
@@ -228,27 +254,34 @@ export const generatePdfMakeDefinition = (resumeData) => {
     if (d.professional_qualifications && d.professional_qualifications.length > 0) {
         addSectionHeader('Technical Expertise');
 
-        d.professional_qualifications.forEach((q, index) => {
+        const skillsStack = d.professional_qualifications.map((q, index) => {
             const isLast = index === d.professional_qualifications.length - 1;
-            content.push({
+            return {
                 columns: [
                     {
-                        width: 110,
+                        width: 120,
                         text: stripHtml(q.category).toUpperCase(),
-                        fontSize: L.BODY_SIZE - 1,
+                        fontSize: L.BODY_SIZE - 0.5,
                         bold: true,
                         color: '#000000',
-                        characterSpacing: 0.4
+                        characterSpacing: 0.3
                     },
                     {
                         width: '*',
                         text: stripHtml(q.skills),
                         fontSize: L.BODY_SIZE,
-                        color: '#222222'
+                        color: '#1e293b'
                     }
                 ],
-                margin: [0, 0, 0, isLast ? L.SECTION_GAP : 5]
-            });
+                margin: [0, 0, 0, isLast ? L.SECTION_GAP : 4]
+            };
+        });
+
+        // Skills section as unbreakable
+        content.push({
+            unbreakable: true,
+            stack: skillsStack,
+            margin: [0, 0, 0, 0]
         });
     }
 
@@ -260,34 +293,42 @@ export const generatePdfMakeDefinition = (resumeData) => {
             const isLast = index === d.extra_curricular.length - 1;
             const titleParts = [ec.role, ec.organization].filter(Boolean);
 
-            content.push({
+            const entryStack = [];
+
+            entryStack.push({
                 columns: [
                     {
                         text: [
                             { text: stripHtml(titleParts[0] || ''), bold: true },
-                            titleParts[1] ? { text: `, ${stripHtml(titleParts[1])}` } : null
+                            titleParts[1] ? { text: `, ${stripHtml(titleParts[1])}`, italics: true } : null
                         ].filter(Boolean),
                         fontSize: L.BODY_SIZE,
-                        color: '#111111'
+                        color: '#0f172a'
                     },
-                    { text: stripHtml(ec.period), fontSize: L.BODY_SIZE - 0.5, bold: true, color: '#333333', alignment: 'right' }
+                    { text: stripHtml(ec.period), fontSize: L.BODY_SIZE, color: '#334155', alignment: 'right' }
                 ],
                 margin: [0, 0, 0, 1]
             });
 
             const validBullets = (ec.bullets || []).filter(b => stripHtml(b).trim().length > 0);
             if (validBullets.length > 0) {
-                content.push({
+                entryStack.push({
                     ul: validBullets.map(b => ({
                         text: stripHtml(b),
                         fontSize: L.BULLET_SIZE,
-                        color: '#333333',
+                        color: '#1e293b',
                         lineHeight: 1.45,
                         margin: [0, 0, 0, L.BULLET_GAP]
                     })),
-                    margin: [0, 2, 0, isLast ? 0 : L.ENTRY_GAP]
+                    margin: [0, 2, 0, 0]
                 });
             }
+
+            content.push({
+                unbreakable: true,
+                stack: entryStack,
+                margin: [0, 0, 0, isLast ? 0 : L.ENTRY_GAP]
+            });
         });
     }
 
@@ -298,7 +339,7 @@ export const generatePdfMakeDefinition = (resumeData) => {
             font: 'Roboto',
             fontSize: L.BODY_SIZE,
             lineHeight: L.LINE_HEIGHT,
-            color: '#1a1a1a'
+            color: '#0f172a'
         }
     };
 };

@@ -16,6 +16,7 @@ function App() {
   const [aiFeed, setAiFeed] = useState([]);
   const [matchScore, setMatchScore] = useState(0);
   const [missingKeywords, setMissingKeywords] = useState([]);
+  const [extraMetrics, setExtraMetrics] = useState(null);
 
   // Auto-Save: Sync state to localStorage
   React.useEffect(() => {
@@ -53,6 +54,7 @@ function App() {
     localStorage.removeItem('aura_resume_cache');
     setMatchScore(0);
     setMissingKeywords([]);
+    setExtraMetrics(null);
     setAiFeed([]);
     setShowRevertModal(false);
   };
@@ -71,11 +73,12 @@ function App() {
       await new Promise(r => setTimeout(r, 600));
       addLog("Cross-referencing mechatronics experience with JD requirements...", "info");
 
-      const { match_score, missing_keywords, ...synthesizedCV } = await tailorResume(resumeData, jd);
+      const { match_score, missing_keywords, extra_metrics, ...synthesizedCV } = await tailorResume(resumeData, jd);
 
-      addLog(`Analysis Complete. Match Score: ${match_score}%`, "success");
+      addLog(`Analysis Complete. Final Match Score: ${match_score}%`, "success");
       setMatchScore(match_score);
       setMissingKeywords(missing_keywords || []);
+      setExtraMetrics(extra_metrics || null);
 
       if (missing_keywords && missing_keywords.length > 0) {
         addLog(`${missing_keywords.length} missing keywords identified`, "warning");
@@ -126,6 +129,7 @@ function App() {
               aiFeed={aiFeed}
               matchScore={matchScore}
               missingKeywords={missingKeywords}
+              extraMetrics={extraMetrics}
               onBack={() => setView('home')}
             />
           </motion.div>
