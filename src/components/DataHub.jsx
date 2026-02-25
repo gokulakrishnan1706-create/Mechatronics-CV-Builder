@@ -6,37 +6,34 @@ import { User, Briefcase, Award, GraduationCap, Trophy, ChevronDown, Plus, Trash
 // ═══ SECTION WRAPPER (Collapsible Accordion) ═══
 const Section = ({ title, icon, children, isOpen, onToggle, itemCount, hasContent }) => (
     <div className="mb-4 relative group/section">
-        {/* Glow behind section on hover */}
-        <div className="absolute -inset-1 bg-gradient-to-r from-aura-primary/10 via-transparent to-aura-accent/10 rounded-2xl opacity-0 group-hover/section:opacity-100 blur-md transition-opacity duration-500 pointer-events-none" />
-
-        <div className={`relative rounded-2xl border transition-all duration-300 overflow-hidden ${isOpen
-            ? 'bg-[#111] border-white/10 shadow-[0_8px_30px_rgba(0,0,0,0.5)] shadow-aura-primary/5'
-            : 'bg-black/20 border-white/5 hover:border-white/10 hover:bg-white/5'
+        <div className={`relative rounded-xl border transition-all duration-300 overflow-hidden ${isOpen
+            ? 'bg-white border-slate-200 shadow-sm'
+            : 'bg-transparent border-slate-200 hover:border-slate-300 hover:bg-slate-50'
             }`}>
             <button
                 onClick={onToggle}
-                className="w-full relative flex items-center justify-between p-4.5 sm:p-5 text-left active:scale-[0.99] transition-transform z-10"
+                className="w-full relative flex items-center justify-between p-4.5 sm:p-5 text-left active:scale-[0.99] transition-transform z-10 cursor-pointer"
             >
                 <div className="flex items-center gap-4">
-                    <div className={`p-2.5 rounded-xl transition-all duration-300 ${isOpen || hasContent
-                        ? 'bg-gradient-to-br from-aura-primary/20 to-aura-accent/20 border border-aura-primary/30 shadow-[0_0_15px_rgba(139,92,246,0.3)]'
-                        : 'bg-white/5 border border-white/10 text-white/40'
+                    <div className={`p-2.5 rounded-lg transition-all duration-300 ${isOpen || hasContent
+                        ? 'bg-brand-primary/10 border border-brand-primary/20 text-brand-primary shadow-sm'
+                        : 'bg-slate-50 border border-slate-200 text-slate-400'
                         }`}>
                         {React.cloneElement(icon, {
-                            className: `h-5 w-5 ${isOpen || hasContent ? 'text-aura-primary' : 'text-white/40'}`
+                            className: `h-5 w-5 ${isOpen || hasContent ? 'text-brand-primary' : 'text-slate-400'}`
                         })}
                     </div>
                     <div>
-                        <h3 className={`font-bold tracking-tight transition-colors ${isOpen ? 'text-white text-base' : 'text-white/80 text-sm'}`}>
+                        <h3 className={`font-bold tracking-tight transition-colors ${isOpen ? 'text-slate-900 text-base' : 'text-slate-700 text-sm'}`}>
                             {title}
                         </h3>
                         {itemCount !== undefined && (
-                            <p className="text-[10px] font-mono text-white/40 mt-0.5 uppercase tracking-widest">
+                            <p className="text-[10px] font-mono text-slate-500 mt-0.5 uppercase tracking-widest">
                                 {itemCount} {itemCount === 1 ? 'Entry' : 'Entries'}
                             </p>
                         )}
                         {!itemCount && !hasContent && (
-                            <p className="text-[10px] font-mono text-white/30 mt-0.5 uppercase tracking-widest">Optional</p>
+                            <p className="text-[10px] font-mono text-slate-500 mt-0.5 uppercase tracking-widest">Optional</p>
                         )}
                     </div>
                 </div>
@@ -49,7 +46,7 @@ const Section = ({ title, icon, children, isOpen, onToggle, itemCount, hasConten
                         </span>
                     )}
                     <div
-                        className={`p-1.5 rounded-lg ${isOpen ? 'bg-white/10 text-white' : 'text-white/30 hover:bg-white/5 hover:text-white/60'}`}
+                        className={`p-1.5 rounded-lg ${isOpen ? 'bg-slate-100 text-slate-900' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'}`}
                     >
                         <ChevronDown className="h-4 w-4" />
                     </div>
@@ -58,7 +55,7 @@ const Section = ({ title, icon, children, isOpen, onToggle, itemCount, hasConten
 
             {isOpen && (
                 <div>
-                    <div className="p-4 sm:p-5 pt-0 border-t border-white/5 bg-gradient-to-b from-transparent to-black/20">
+                    <div className="p-4 sm:p-5 pt-0 border-t border-slate-100">
                         {children}
                     </div>
                 </div>
@@ -70,14 +67,14 @@ const Section = ({ title, icon, children, isOpen, onToggle, itemCount, hasConten
 // ═══ INPUT FIELD (with focus glow) ═══
 const InputField = ({ label, value, onChange, placeholder }) => (
     <div className="space-y-1.5 group/input">
-        <label className="text-[11px] font-bold px-1 block text-white/40 group-focus-within/input:text-aura-primary transition-colors uppercase tracking-wider">{label}</label>
+        <label className="text-[11px] font-bold px-1 block text-slate-500 group-focus-within/input:text-brand-primary transition-colors uppercase tracking-wider">{label}</label>
         <div className="relative">
             <input
                 type="text"
                 value={value || ''}
                 onChange={e => onChange(e.target.value)}
                 placeholder={placeholder || ''}
-                className="w-full bg-white/5 text-white text-sm border border-white/10 rounded-xl px-3 py-2.5 focus:border-aura-primary/50 focus:bg-white/10 focus:shadow-[0_0_0_2px_rgba(139,92,246,0.15)] transition-all duration-200 outline-none placeholder:text-white/20 font-medium"
+                className="w-full bg-white text-slate-900 text-sm border border-slate-300 rounded-lg px-3 py-2.5 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary focus:bg-white transition-all duration-200 outline-none placeholder-slate-400 font-medium shadow-sm"
             />
         </div>
     </div>
@@ -92,8 +89,8 @@ const TextAreaField = ({ label, value, onChange, rows = 3, maxChars = 500 }) => 
     return (
         <div className="space-y-1.5 group/input flex flex-col h-full">
             <div className="flex items-center justify-between px-1">
-                <label className="text-[11px] font-bold text-white/40 group-focus-within/input:text-aura-primary transition-colors uppercase tracking-wider">{label}</label>
-                <span className={`text-[10px] font-mono transition-colors ${isOver ? 'text-rose-400' : isWarning ? 'text-amber-400' : 'text-white/30'}`}>
+                <label className="text-[11px] font-bold text-slate-500 group-focus-within/input:text-brand-primary transition-colors uppercase tracking-wider">{label}</label>
+                <span className={`text-[10px] font-mono transition-colors ${isOver ? 'text-rose-500' : isWarning ? 'text-amber-500' : 'text-slate-500'}`}>
                     {charCount}/{maxChars}
                 </span>
             </div>
@@ -101,7 +98,7 @@ const TextAreaField = ({ label, value, onChange, rows = 3, maxChars = 500 }) => 
                 value={value || ''}
                 onChange={e => onChange(e.target.value)}
                 rows={rows}
-                className="w-full bg-white/5 text-white text-sm resize-y min-h-[70px] border border-white/10 rounded-xl px-3 py-2.5 focus:border-aura-primary/50 focus:bg-white/10 focus:shadow-[0_0_0_2px_rgba(139,92,246,0.15)] transition-all duration-200 outline-none placeholder:text-white/20 font-medium custom-scrollbar leading-relaxed"
+                className="w-full bg-white text-slate-900 text-sm resize-y min-h-[70px] border border-slate-300 rounded-lg px-3 py-2.5 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary focus:bg-white transition-all duration-200 outline-none placeholder-slate-400 font-medium custom-scrollbar leading-relaxed shadow-sm"
             />
         </div>
     );
@@ -113,18 +110,18 @@ const BulletItem = ({ index, value, onChange, onDelete }) => (
         className="flex items-start gap-2 group/bullet"
     >
         <div className="flex items-center gap-1 mt-3 shrink-0">
-            <GripVertical className="h-4 w-4 text-white/20 hover:text-white/60 transition-colors cursor-grab" />
-            <span className="text-[10px] font-mono text-white/30 w-4 text-right">{index + 1}.</span>
+            <GripVertical className="h-4 w-4 text-slate-400 hover:text-slate-600 transition-colors cursor-grab" />
+            <span className="text-[10px] font-mono text-slate-500 w-4 text-right">{index + 1}.</span>
         </div>
         <textarea
             value={value}
             onChange={e => onChange(e.target.value)}
             rows={2}
-            className="w-full bg-black/20 text-white text-sm resize-y leading-relaxed flex-1 border border-white/5 rounded-xl px-3 py-2.5 focus:border-aura-primary/40 focus:bg-white/5 focus:shadow-[0_0_0_2px_rgba(139,92,246,0.1)] transition-all duration-200 outline-none custom-scrollbar"
+            className="w-full bg-white text-slate-900 text-sm resize-y leading-relaxed flex-1 border border-slate-300 rounded-lg px-3 py-2.5 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary focus:bg-white transition-all duration-200 outline-none custom-scrollbar shadow-sm"
         />
         <button
             onClick={onDelete}
-            className="mt-2.5 p-1.5 rounded-lg text-white/30 hover:text-rose-400 hover:bg-rose-500/10 transition-all opacity-0 group-hover/bullet:opacity-100 shrink-0"
+            className="mt-2.5 p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all opacity-0 group-hover/bullet:opacity-100 shrink-0 cursor-pointer"
             title="Remove bullet"
         >
             <Trash2 className="h-4 w-4" />
@@ -136,9 +133,9 @@ const BulletItem = ({ index, value, onChange, onDelete }) => (
 const AddButton = ({ onClick, label }) => (
     <button
         onClick={onClick}
-        className="w-full py-3 px-4 rounded-xl border border-dashed border-white/10 hover:border-aura-primary/40 text-white/40 hover:text-aura-primary text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-300 hover:bg-aura-primary/5 active:scale-[0.98] group"
+        className="w-full py-3 px-4 rounded-lg border border-dashed border-slate-300 hover:border-brand-primary/40 text-slate-500 hover:text-brand-primary text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-300 hover:bg-brand-primary/5 active:scale-[0.98] group cursor-pointer"
     >
-        <div className="bg-white/5 p-1 rounded-md group-hover:bg-aura-primary/20 transition-colors">
+        <div className="bg-slate-50 p-1 rounded-md group-hover:bg-brand-primary/10 transition-colors">
             <Plus className="h-3.5 w-3.5" />
         </div>
         {label}
@@ -148,13 +145,13 @@ const AddButton = ({ onClick, label }) => (
 // ═══ ENTRY CARD (wrapper for each experience/education/etc entry) ═══
 const EntryCard = ({ index, onDelete, children }) => (
     <div
-        className="p-5 bg-black/20 border border-white/5 rounded-2xl space-y-4 relative group/card hover:border-white/10 hover:bg-white/5 transition-all duration-300"
+        className="p-5 bg-white border border-slate-200 shadow-sm rounded-xl space-y-4 relative group/card hover:border-slate-300 hover:shadow-md transition-all duration-300"
     >
         <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
-            <span className="text-[10px] font-mono font-bold text-white/20 group-hover/card:text-white/40 transition-colors bg-black/40 px-2 py-0.5 rounded-md border border-white/5">#{index + 1}</span>
+            <span className="text-[10px] font-mono font-bold text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200 group-hover/card:bg-slate-100 transition-colors">#{index + 1}</span>
             <button
                 onClick={onDelete}
-                className="p-1.5 rounded-lg text-white/30 hover:text-rose-400 hover:bg-rose-500/10 transition-all opacity-0 group-hover/card:opacity-100 border border-transparent hover:border-rose-500/20"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all opacity-0 group-hover/card:opacity-100 border border-transparent hover:border-rose-200 cursor-pointer"
                 title="Remove entry"
             >
                 <Trash2 className="h-3.5 w-3.5" />
@@ -244,8 +241,8 @@ const DataHub = ({ data, onUpdate }) => {
     return (
         <div className="space-y-2">
             <div className="mb-5 px-1">
-                <h3 className="text-sm font-bold text-white tracking-tight">Document Structure</h3>
-                <p className="text-[11px] text-aura-muted mt-1">Edit fields, add entries, and manage your CV content</p>
+                <h3 className="text-sm font-bold text-slate-900 tracking-tight">Document Structure</h3>
+                <p className="text-[11px] text-slate-500 mt-1">Edit fields, add entries, and manage your CV content</p>
             </div>
 
             {/* ═══ PERSONAL ═══ */}
@@ -269,8 +266,8 @@ const DataHub = ({ data, onUpdate }) => {
                         <InputField label="Period" value={job.period} onChange={v => updateArrayField('work_experience', idx, 'period', v)} placeholder="Jan 2022 – Present" />
                         <TextAreaField label="Context" value={job.context} onChange={v => updateArrayField('work_experience', idx, 'context', v)} rows={2} maxChars={300} />
 
-                        <div className="space-y-2 pt-3 border-t border-[#1A1A1A]">
-                            <label className="text-[11px] font-medium px-1 block text-aura-muted">Key Achievements</label>
+                        <div className="space-y-2 pt-3 border-t border-slate-100">
+                            <label className="text-[11px] font-medium px-1 block text-slate-500">Key Achievements</label>
                             {job.achievements?.map((a, ai) => (
                                 <BulletItem
                                     key={ai}
@@ -286,8 +283,8 @@ const DataHub = ({ data, onUpdate }) => {
                 ))}
                 {(!data.work_experience || data.work_experience.length === 0) && (
                     <div className="py-8 text-center">
-                        <Briefcase className="h-8 w-8 text-[#333] mx-auto mb-3" />
-                        <p className="text-sm text-aura-muted">No work experience added yet</p>
+                        <Briefcase className="h-8 w-8 text-slate-300 mx-auto mb-3" />
+                        <p className="text-sm text-slate-500">No work experience added yet</p>
                     </div>
                 )}
                 <AddButton onClick={addWorkExperience} label="Add Work Experience" />
@@ -301,8 +298,8 @@ const DataHub = ({ data, onUpdate }) => {
                         <InputField label="Institution" value={edu.institution} onChange={v => updateArrayField('education', idx, 'institution', v)} />
                         <InputField label="Period" value={edu.period} onChange={v => updateArrayField('education', idx, 'period', v)} placeholder="Sept 2020 – Jun 2024" />
 
-                        <div className="space-y-2 pt-3 border-t border-[#1A1A1A]">
-                            <label className="text-[11px] font-medium px-1 block text-aura-muted">Highlights</label>
+                        <div className="space-y-2 pt-3 border-t border-slate-100">
+                            <label className="text-[11px] font-medium px-1 block text-slate-500">Highlights</label>
                             {edu.bullets?.map((b, bi) => (
                                 <BulletItem
                                     key={bi}
@@ -318,8 +315,8 @@ const DataHub = ({ data, onUpdate }) => {
                 ))}
                 {(!data.education || data.education.length === 0) && (
                     <div className="py-8 text-center">
-                        <GraduationCap className="h-8 w-8 text-[#333] mx-auto mb-3" />
-                        <p className="text-sm text-aura-muted">No education entries yet</p>
+                        <GraduationCap className="h-8 w-8 text-slate-300 mx-auto mb-3" />
+                        <p className="text-sm text-slate-500">No education entries yet</p>
                     </div>
                 )}
                 <AddButton onClick={addEducation} label="Add Education" />
@@ -335,8 +332,8 @@ const DataHub = ({ data, onUpdate }) => {
                 ))}
                 {(!data.professional_qualifications || data.professional_qualifications.length === 0) && (
                     <div className="py-8 text-center">
-                        <Award className="h-8 w-8 text-[#333] mx-auto mb-3" />
-                        <p className="text-sm text-aura-muted">No skills categories yet</p>
+                        <Award className="h-8 w-8 text-slate-300 mx-auto mb-3" />
+                        <p className="text-sm text-slate-500">No skills categories yet</p>
                     </div>
                 )}
                 <AddButton onClick={addQualification} label="Add Skill Category" />
@@ -350,8 +347,8 @@ const DataHub = ({ data, onUpdate }) => {
                         <InputField label="Organization" value={ec.organization} onChange={v => updateArrayField('extra_curricular', idx, 'organization', v)} />
                         <InputField label="Period" value={ec.period} onChange={v => updateArrayField('extra_curricular', idx, 'period', v)} />
 
-                        <div className="space-y-2 pt-3 border-t border-[#1A1A1A]">
-                            <label className="text-[11px] font-medium px-1 block text-aura-muted">Bullet Points</label>
+                        <div className="space-y-2 pt-3 border-t border-slate-100">
+                            <label className="text-[11px] font-medium px-1 block text-slate-500">Bullet Points</label>
                             {ec.bullets?.map((b, bi) => (
                                 <BulletItem
                                     key={bi}
@@ -367,8 +364,8 @@ const DataHub = ({ data, onUpdate }) => {
                 ))}
                 {(!data.extra_curricular || data.extra_curricular.length === 0) && (
                     <div className="py-8 text-center">
-                        <Trophy className="h-8 w-8 text-[#333] mx-auto mb-3" />
-                        <p className="text-sm text-aura-muted">No activities yet</p>
+                        <Trophy className="h-8 w-8 text-slate-300 mx-auto mb-3" />
+                        <p className="text-sm text-slate-500">No activities yet</p>
                     </div>
                 )}
                 <AddButton onClick={addExtraCurricular} label="Add Activity" />

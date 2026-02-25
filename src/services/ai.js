@@ -2,6 +2,28 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
+export const MECHATRONICS_TAXONOMY = {
+  "CAD": ["SolidWorks", "AutoCAD", "CATIA", "Creo", "NX", "Fusion 360", "Inventor"],
+  "Controls": ["PLC", "SCADA", "PID", "Allen Bradley", "Siemens", "Beckhoff", "Automation", "HMI", "Ladder Logic"],
+  "Robotics": ["ROS", "Kinematics", "FANUC", "KUKA", "ABB", "UR", "Cobots", "Path Planning"],
+  "Programming": ["C++", "Python", "MATLAB", "Simulink", "C", "IEC 61131-3", "Embedded C"],
+  "Electronics": ["PCB Design", "Altium", "Eagle", "KiCad", "Microcontrollers", "Arduino", "Raspberry Pi", "FPGA", "VHDL", "Verilog"],
+  "Systems Engineering": ["FMEA", "SysML", "Requirements Engineering", "MBSE", "Validation"],
+  "Sensors & Actuators": ["Lidar", "Encoders", "Servos", "Stepper Motors", "Pneumatics", "Hydraulics"]
+};
+
+export const calculateImpactScore = (resumeText) => {
+  const metricsRegex = /\b(\d+(?:\.\d+)?(?:%|\$|mm|cm|m|kg|g|ms|s|hours|hrs|mins|k|M|B)?)\b/gi;
+  const actionVerbs = /\b(Led|Developed|Designed|Engineered|Reduced|Increased|Optimized|Implemented|Spearheaded|Managed|Automated|Resolved|Built|Created|Executed|Delivered)\b/gi;
+
+  const metricsCount = (resumeText.match(metricsRegex) || []).length;
+  const verbsCount = (resumeText.match(actionVerbs) || []).length;
+
+  // Max out impact points at 20
+  const impactScore = Math.min(20, (metricsCount * 1.5) + (verbsCount * 0.5));
+  return Math.round(impactScore);
+};
+
 /**
  * Professional ATS Algorithm Prompt Engineering
  * Mimics industry-standard CV tailoring logic.
@@ -18,11 +40,19 @@ CRITICAL RULES:
 - TOTAL REWRITE: Rewrite the Profile, Experience bullets, and Project descriptions to align with the JD's core needs, but keep the core truth intact.
 
 OUTPUT SPECIFICATIONS (JSON ONLY):
-Return a complete JSON object matching the exact structure below. All text fields should contain your newly synthesized, human-sounding narrative. Include a match_score and missing_keywords for feedback.
+Return a complete JSON object matching the exact structure below. All text fields should contain your newly synthesized, human-sounding narrative.
 
 {
-  "match_score": number (0-100),
-  "missing_keywords": ["keyword1", "keyword2"],
+  "semanticScore": 85,
+  "foundSkills": ["SolidWorks", "Python"],
+  "missingCrucialSkills": ["PLC Programming"],
+  "impactCritique": "Bullet 2 lacks quantifiable metrics.",
+  "contextualSuggestions": [
+    {
+      "target": "Experience Bullet 3",
+      "suggestion": "Rewrite to include Agile Methodology: 'Led cross-functional Agile team to...'"
+    }
+  ],
   "personal": {
     "name": "string", "location": "string", "phone": "string", "email": "string", "linkedin": "string"
   },
@@ -76,7 +106,52 @@ Perform a Total Synthesis and return the specific JSON structure requested. DO N
     }
 
     const jsonString = text.substring(startIndex, endIndex + 1);
-    return JSON.parse(jsonString);
+    const parsedJSON = JSON.parse(jsonString);
+
+    // Proprietary Math: Compute Impact & Ontology ATS Score
+    const resumeTextStr = JSON.stringify(resumeData);
+    const impactScore = calculateImpactScore(resumeTextStr);
+
+    let ontologyMatches = 0;
+    let requiredCategories = 0;
+    const jdLower = jobDescription.toLowerCase();
+    const resumeLower = resumeTextStr.toLowerCase();
+
+    for (const [category, synonyms] of Object.entries(MECHATRONICS_TAXONOMY)) {
+      const isCategoryInJD = synonyms.some(syn => jdLower.includes(syn.toLowerCase())) || jdLower.includes(category.toLowerCase());
+      if (isCategoryInJD) {
+        requiredCategories++;
+        const isCategoryInResume = synonyms.some(syn => resumeLower.includes(syn.toLowerCase())) || resumeLower.includes(category.toLowerCase());
+        if (isCategoryInResume) {
+          ontologyMatches++;
+        }
+      }
+    }
+
+    // Base match score from ontology (0 to 40 points)
+    const ontologyScore = requiredCategories > 0 ? Math.round((ontologyMatches / requiredCategories) * 40) : 40;
+
+    // Semantic Score from LLM (0 to 100) mapped to 40 points
+    const llmSemanticScore = parsedJSON.semanticScore || 80;
+    const semanticContribution = Math.round(llmSemanticScore * 0.4);
+
+    // Final Next-Gen ATS Score out of 100
+    const finalMatchScore = Math.min(100, semanticContribution + ontologyScore + impactScore);
+
+    // Inject the final algorithm metrics backward into the parsedJSON
+    // App.jsx will automatically collect these via destructuring
+    parsedJSON.match_score = finalMatchScore;
+    parsedJSON.missing_keywords = parsedJSON.missingCrucialSkills || [];
+
+    parsedJSON.extra_metrics = {
+      semanticScore: llmSemanticScore,
+      impactScore,
+      ontologyScore,
+      impactCritique: parsedJSON.impactCritique,
+      contextualSuggestions: parsedJSON.contextualSuggestions || []
+    };
+
+    return parsedJSON;
   } catch (error) {
     console.error("Gemini AI Error:", error);
     throw error;

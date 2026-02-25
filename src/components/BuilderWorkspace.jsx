@@ -8,7 +8,7 @@ import DataHub from './DataHub';
 import MatchEngine from './MatchEngine';
 import ResumeView from './ResumeView';
 
-const BuilderWorkspace = ({ resumeData, onUpdate, onTailor, onReset, aiFeed, matchScore, missingKeywords, onBack }) => {
+const BuilderWorkspace = ({ resumeData, onUpdate, onTailor, onReset, aiFeed, matchScore, missingKeywords, extraMetrics, onBack }) => {
     const cvRef = useRef(null);
     const [isDownloading, setIsDownloading] = useState(false);
     const [downloadSuccess, setDownloadSuccess] = useState(false);
@@ -135,50 +135,38 @@ const BuilderWorkspace = ({ resumeData, onUpdate, onTailor, onReset, aiFeed, mat
     const zoomOut = () => setZoom(prev => Math.max(prev - 10, 50));
 
     return (
-        <div className="h-screen bg-aura-bg flex flex-col font-sans overflow-hidden text-aura-text relative">
-
-            {/* ═══ Ambient Background Glows ═══ */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-                <div
-                    className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-aura-primary/10 rounded-full blur-[150px] mix-blend-screen"
-                />
-                <div
-                    className="absolute bottom-[-20%] left-[-10%] w-[50%] h-[50%] bg-aura-accent/10 rounded-full blur-[150px] mix-blend-screen"
-                />
-            </div>
+        <div className="h-screen bg-slate-50 flex flex-col font-sans overflow-hidden text-slate-900 relative">
 
             {/* ═══ COMMAND BAR ═══ */}
             <header
-                className="bg-aura-bg/80 backdrop-blur-xl border-b border-white/5 flex flex-col z-20 shrink-0 shadow-[0_4px_30px_rgba(0,0,0,0.3)] relative"
+                className="bg-white border-b border-slate-200 flex flex-col z-20 shrink-0 relative"
             >
-                {/* Top decorative edge */}
-                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-aura-primary/30 to-transparent"></div>
 
                 {/* Primary Row */}
                 <div className="h-16 flex flex-wrap items-center justify-between px-6 gap-4">
                     <div className="flex items-center gap-6">
                         <button
                             onClick={onBack}
-                            className="text-white/50 hover:text-white transition-all p-2 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/10 active:scale-95 group shadow-sm bg-black/20"
+                            className="text-slate-500 hover:text-slate-900 transition-all p-2 rounded-lg hover:bg-slate-100 border border-slate-200 active:scale-95 group shadow-sm bg-white cursor-pointer"
                         >
                             <ArrowLeft className="h-5 w-5 group-hover:-translate-x-1 transition-transform" />
                         </button>
-                        <div className="h-8 w-px bg-white/10 hidden sm:block" />
+                        <div className="h-8 w-px bg-slate-200 hidden sm:block" />
                         <div className="flex items-center gap-3">
-                            <div className="bg-gradient-to-br from-aura-primary to-aura-glow p-2 rounded-xl shadow-[0_0_20px_rgba(139,92,246,0.3)]">
-                                <Command className="h-4 w-4 text-white" />
+                            <div className="bg-white border border-slate-200 p-2 rounded-xl shadow-sm">
+                                <Command className="h-4 w-4 text-slate-900" />
                             </div>
                             <div className="flex flex-col">
                                 <input
                                     type="text"
                                     value={resumeData.personal.name || 'Untitled Document'}
                                     onChange={(e) => onUpdate('personal.name', e.target.value)}
-                                    className="bg-transparent font-bold text-white text-base leading-tight placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-aura-primary/50 focus:bg-white/5 rounded px-1 -ml-1 transition-all"
+                                    className="bg-transparent font-bold text-slate-900 text-base leading-tight placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:bg-white rounded-md px-1.5 -ml-1 transition-all"
                                     placeholder="Resume Title"
                                 />
                                 <div className="flex items-center gap-2 mt-0.5 px-1">
-                                    <span className="text-[10px] text-aura-primary/80 font-mono tracking-widest uppercase">Workspace Output</span>
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)] animate-pulse" />
+                                    <span className="text-[10px] text-brand-primary font-mono tracking-widest uppercase">Workspace Output</span>
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                 </div>
                             </div>
                         </div>
@@ -186,22 +174,22 @@ const BuilderWorkspace = ({ resumeData, onUpdate, onTailor, onReset, aiFeed, mat
 
                     <div className="flex items-center gap-4">
                         {/* Zoom Controls */}
-                        <div className="hidden sm:flex items-center gap-1 bg-black/40 rounded-xl border border-white/10 p-1 backdrop-blur-sm shadow-inner shadow-black/50">
-                            <button onClick={zoomOut} className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-colors" title="Zoom Out">
+                        <div className="hidden sm:flex items-center gap-1 bg-white rounded-lg border border-slate-200 p-1 shadow-sm">
+                            <button onClick={zoomOut} className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors cursor-pointer" title="Zoom Out">
                                 <ZoomOut className="h-4 w-4" />
                             </button>
-                            <span className="text-xs font-mono text-white/70 w-10 text-center font-bold">{zoom}%</span>
-                            <button onClick={zoomIn} className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-colors" title="Zoom In">
+                            <span className="text-xs font-mono text-slate-700 w-10 text-center font-bold">{zoom}%</span>
+                            <button onClick={zoomIn} className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors cursor-pointer" title="Zoom In">
                                 <ZoomIn className="h-4 w-4" />
                             </button>
                         </div>
 
-                        <div className="h-8 w-px bg-white/10 hidden sm:block" />
+                        <div className="h-8 w-px bg-slate-200 hidden sm:block" />
 
                         <button
                             onClick={onReset}
                             title="Restore Original Data"
-                            className="text-white/50 hover:text-red-400 p-2.5 rounded-xl hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all active:scale-95 bg-black/20"
+                            className="text-slate-500 hover:text-red-600 p-2.5 rounded-lg hover:bg-red-50 border border-slate-200 hover:border-red-200 shadow-sm transition-all active:scale-95 cursor-pointer"
                         >
                             <RotateCcw className="h-4 w-4" />
                         </button>
@@ -211,9 +199,9 @@ const BuilderWorkspace = ({ resumeData, onUpdate, onTailor, onReset, aiFeed, mat
                             <button
                                 onClick={() => setShowDropdown(!showDropdown)}
                                 disabled={isDownloading}
-                                className={`inline-flex items-center gap-2 py-2.5 px-5 rounded-xl text-sm font-bold transition-all active:scale-[0.97] border shadow-lg ${downloadSuccess
-                                    ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400 shadow-emerald-500/20'
-                                    : 'bg-gradient-to-r from-aura-primary to-aura-glow border-white/10 text-white shadow-aura-primary/20 hover:shadow-aura-primary/40'
+                                className={`inline-flex items-center gap-2 py-2.5 px-5 rounded-lg text-sm font-bold transition-all active:scale-[0.97] border cursor-pointer ${downloadSuccess
+                                    ? 'bg-emerald-50 border-emerald-200 text-emerald-700 shadow-sm'
+                                    : 'bg-brand-primary hover:bg-blue-700 border-transparent text-white shadow-sm'
                                     }`}
                             >
                                 {isDownloading ? (
@@ -227,24 +215,24 @@ const BuilderWorkspace = ({ resumeData, onUpdate, onTailor, onReset, aiFeed, mat
 
                             {showDropdown && !isDownloading && (
                                 <div
-                                    className="absolute right-0 top-full mt-3 glass-card border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-[100] w-56 p-2 backdrop-blur-2xl"
+                                    className="absolute right-0 top-full mt-3 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden z-[100] w-56 p-2"
                                 >
-                                    <button onClick={handleDownloadPDF} className="w-full flex items-start gap-3 px-4 py-3 hover:bg-white/10 rounded-xl text-left transition-colors group">
-                                        <div className="bg-rose-500/20 p-2 rounded-lg mt-0.5 group-hover:scale-110 transition-transform">
-                                            <FileIcon className="h-4 w-4 text-rose-400" />
+                                    <button onClick={handleDownloadPDF} className="w-full flex items-start gap-3 px-4 py-3 hover:bg-slate-50 rounded-lg text-left transition-colors cursor-pointer group">
+                                        <div className="bg-rose-50 p-2 rounded-lg mt-0.5 group-hover:scale-110 transition-transform">
+                                            <FileIcon className="h-4 w-4 text-rose-500" />
                                         </div>
                                         <div>
-                                            <p className="text-sm font-bold text-white mb-0.5">High-Res PDF</p>
-                                            <p className="text-[10px] text-white/50 leading-tight">Best for ATS parsing & email</p>
+                                            <p className="text-sm font-bold text-slate-900 mb-0.5">High-Res PDF</p>
+                                            <p className="text-[10px] text-slate-500 leading-tight">Best for ATS parsing & email</p>
                                         </div>
                                     </button>
-                                    <button onClick={handleDownloadWord} className="w-full flex items-start gap-3 px-4 py-3 hover:bg-white/10 rounded-xl text-left transition-colors group mt-1">
-                                        <div className="bg-blue-500/20 p-2 rounded-lg mt-0.5 group-hover:scale-110 transition-transform">
-                                            <FileType className="h-4 w-4 text-blue-400" />
+                                    <button onClick={handleDownloadWord} className="w-full flex items-start gap-3 px-4 py-3 hover:bg-slate-50 rounded-lg text-left transition-colors cursor-pointer group mt-1">
+                                        <div className="bg-blue-50 p-2 rounded-lg mt-0.5 group-hover:scale-110 transition-transform">
+                                            <FileType className="h-4 w-4 text-blue-500" />
                                         </div>
                                         <div>
-                                            <p className="text-sm font-bold text-white mb-0.5">MS Word (.doc)</p>
-                                            <p className="text-[10px] text-white/50 leading-tight">Fully editable format</p>
+                                            <p className="text-sm font-bold text-slate-900 mb-0.5">MS Word (.doc)</p>
+                                            <p className="text-[10px] text-slate-500 leading-tight">Fully editable format</p>
                                         </div>
                                     </button>
                                 </div>
@@ -259,24 +247,21 @@ const BuilderWorkspace = ({ resumeData, onUpdate, onTailor, onReset, aiFeed, mat
 
                 {/* Editor Sidebar */}
                 <div
-                    className="w-full md:w-[480px] shrink-0 flex flex-col bg-aura-surface/40 backdrop-blur-3xl border-r border-white/10 h-full z-10 shadow-[20px_0_50px_rgba(0,0,0,0.3)]"
+                    className="w-full md:w-[480px] shrink-0 flex flex-col bg-white border-r border-slate-200 h-full z-10"
                 >
                     {/* Workspace Tabs - Animated */}
-                    < div className="flex p-4 bg-black/20 border-b border-white/5 gap-2 relative" >
+                    < div className="flex p-4 bg-slate-50 border-b border-slate-200 gap-2 relative" >
                         {
                             ['data', 'match'].map((tab) => (
                                 <button
                                     key={tab}
                                     onClick={() => setActiveTab(tab)}
-                                    className={`flex items-center justify-center gap-2 flex-1 py-3 px-4 rounded-xl text-xs sm:text-sm font-bold transition-colors relative z-10 ${activeTab === tab ? 'text-white' : 'text-white/40 hover:text-white/80'
+                                    className={`flex items-center justify-center gap-2 flex-1 py-3 px-4 rounded-lg text-xs sm:text-sm font-bold transition-colors cursor-pointer relative z-10 ${activeTab === tab ? 'text-brand-primary' : 'text-slate-500 hover:text-slate-900'
                                         }`}
                                 >
                                     {activeTab === tab && (
                                         <div
-                                            className={`absolute inset-0 rounded-xl border shadow-lg ${tab === 'data'
-                                                ? 'bg-aura-primary/20 border-aura-primary/30 shadow-aura-primary/20'
-                                                : 'bg-aura-accent/20 border-aura-accent/30 shadow-aura-accent/20'
-                                                }`}
+                                            className="absolute inset-0 rounded-lg border shadow-sm bg-white border-slate-200"
                                         />
                                     )}
                                     {tab === 'data' ? <Settings className="h-4 w-4 z-10" /> : <Target className="h-4 w-4 z-10" />}
@@ -299,24 +284,24 @@ const BuilderWorkspace = ({ resumeData, onUpdate, onTailor, onReset, aiFeed, mat
                                 key="match"
                                 className="p-5 h-full"
                             >
-                                <MatchEngine onTailor={onTailor} aiFeed={aiFeed} matchScore={matchScore} missingKeywords={missingKeywords} />
+                                <MatchEngine onTailor={onTailor} aiFeed={aiFeed} matchScore={matchScore} missingKeywords={missingKeywords} extraMetrics={extraMetrics} />
                             </div>
                         )}
                     </div>
 
                     {/* Status Strip Footer */}
-                    < div className="h-10 px-5 flex items-center justify-between bg-black/40 border-t border-white/5 text-[10px] font-mono text-white/40 backdrop-blur-md" >
+                    < div className="h-10 px-5 flex items-center justify-between bg-slate-50 border-t border-slate-200 text-[10px] font-mono text-slate-500 shrink-0" >
                         <div className="flex items-center gap-3">
-                            <span className="flex items-center gap-1.5 bg-white/5 px-2 py-1 rounded-md border border-white/10">
-                                <FileText className="h-3 w-3 text-aura-primary" />
+                            <span className="flex items-center gap-1.5 bg-white px-2 py-1 rounded-md border border-slate-200 shadow-sm">
+                                <FileText className="h-3 w-3 text-brand-primary" />
                                 {docStats.words} words
                             </span>
-                            <span className="flex items-center gap-1.5 bg-white/5 px-2 py-1 rounded-md border border-white/10">
+                            <span className="flex items-center gap-1.5 bg-white px-2 py-1 rounded-md border border-slate-200 shadow-sm">
                                 {docStats.pages} {docStats.pages === 1 ? 'page' : 'pages'}
                             </span>
                         </div>
-                        <span className="flex items-center gap-1.5 text-aura-accent">
-                            <div className="w-1.5 h-1.5 rounded-full bg-aura-accent shadow-[0_0_8px_rgba(6,182,212,0.8)] animate-pulse" />
+                        <span className="flex items-center gap-1.5 text-brand-primary font-bold">
+                            <div className="w-1.5 h-1.5 rounded-full bg-brand-primary animate-pulse" />
                             Live Sync
                         </span>
                     </div >
@@ -324,22 +309,21 @@ const BuilderWorkspace = ({ resumeData, onUpdate, onTailor, onReset, aiFeed, mat
 
                 {/* ═══ PREVIEW VIEWPORT ═══ */}
                 <div
-                    className="flex-1 bg-black/50 overflow-y-auto custom-scrollbar flex justify-center py-12 relative"
+                    className="flex-1 bg-slate-100 overflow-y-auto custom-scrollbar flex justify-center py-12 relative"
                 >
                     {/* Subtle grid background */}
-                    < div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
+                    < div className="absolute inset-0 bg-[linear-gradient(to_right,#00000005_1px,transparent_1px),linear-gradient(to_bottom,#00000005_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
 
                     <div className="relative z-10 transition-transform duration-300 ease-out" style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center' }}>
                         {/* Paper Shadow Effect */}
                         <div className="relative group/preview">
-                            <div className="absolute -inset-4 bg-gradient-to-b from-aura-primary/20 via-black/40 to-black/60 rounded-xl blur-2xl opacity-50 group-hover/preview:opacity-80 transition-opacity duration-500" />
-                            <div className="absolute inset-y-0 -right-2 w-2 bg-gradient-to-r from-black/20 to-transparent" />
+                            <div className="absolute -inset-2 bg-black/5 rounded-xl blur-lg opacity-30" />
 
                             {/* The CV Document */}
                             <div
                                 id="cv-preview-container"
                                 ref={cvRef}
-                                className="relative bg-white shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)] ring-1 ring-white/10 transition-transform duration-500"
+                                className="relative bg-white shadow-2xl ring-1 ring-slate-200 transition-transform duration-500"
                                 style={{
                                     width: '850px',
                                     minHeight: '1100px',
@@ -356,7 +340,7 @@ const BuilderWorkspace = ({ resumeData, onUpdate, onTailor, onReset, aiFeed, mat
 
                         {/* Mobile Zoom Hint */}
                         <div className="flex sm:hidden justify-center mt-6">
-                            <span className="text-[10px] font-mono text-white/30 bg-black/40 px-3 py-1.5 rounded-full border border-white/10 backdrop-blur-md">
+                            <span className="text-[10px] font-mono text-slate-500 bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-sm">
                                 Pinch to zoom preview
                             </span>
                         </div>

@@ -4,7 +4,7 @@
 
 @layer base {
     body {
-        @apply bg-[#0A0A0A] text-white antialiased;
+        @apply bg-[#0B0F19] text-[#F9FAFB] antialiased;
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 }
@@ -13,31 +13,32 @@
 
     /* ═══ Card Variants ═══ */
     .linear-card {
-        @apply bg-[#1A1A1A] border border-[#333333] rounded-2xl relative overflow-hidden;
+        @apply bg-[#111827] border border-slate-800 rounded-2xl relative overflow-hidden;
         transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .glass-card {
-        @apply bg-aura-surface backdrop-blur-xl border border-white/5 rounded-2xl;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        @apply bg-[#111827] border border-slate-800 rounded-2xl;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
 
     /* ═══ Text Utilities ═══ */
     .aurora-text {
-        @apply bg-clip-text text-transparent bg-gradient-to-r from-aura-primary via-aura-glow to-aura-accent;
+        @apply text-aura-primary;
     }
 
     /* ═══ Button Variants ═══ */
     .primary-btn {
-        @apply relative inline-flex items-center justify-center px-8 py-4 font-semibold text-white transition-all duration-300 rounded-full bg-gradient-to-r from-aura-primary to-aura-glow overflow-hidden active:scale-[0.98];
+        @apply relative inline-flex items-center justify-center px-8 py-4 font-semibold text-white transition-all duration-300 rounded-lg bg-aura-primary overflow-hidden shadow-sm;
     }
 
     .primary-btn:hover {
-        box-shadow: 0 0 30px rgba(139, 92, 246, 0.6);
+        @apply brightness-110 -translate-y-[1px];
+        box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.15);
     }
 
     .secondary-btn {
-        @apply relative inline-flex items-center justify-center px-8 py-4 font-semibold text-white transition-all duration-300 rounded-full bg-white/5 border border-white/10 backdrop-blur-md overflow-hidden active:scale-[0.98] hover:bg-white/10;
+        @apply relative inline-flex items-center justify-center px-8 py-4 font-semibold text-slate-300 transition-all duration-200 rounded-lg bg-slate-800 border border-slate-700 hover:bg-slate-700 hover:text-white;
     }
 
     .btn-ghost {
@@ -54,8 +55,7 @@
 
     /* ═══ Form Inputs (Glassmorphic Focus) ═══ */
     .form-input {
-        @apply block w-full rounded-lg border bg-[#0D0D0D] py-2.5 px-3.5 shadow-sm text-white text-sm transition-all duration-200;
-        border-color: rgba(255, 255, 255, 0.06);
+        @apply block w-full rounded-lg border border-slate-700 bg-[#111827] py-2.5 px-3.5 shadow-sm text-[#F9FAFB] text-sm transition-all duration-200;
     }
 
     .form-input::placeholder {
@@ -63,9 +63,8 @@
     }
 
     .form-input:focus {
-        @apply outline-none;
-        border-color: rgba(139, 92, 246, 0.4);
-        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.08), 0 0 16px rgba(139, 92, 246, 0.04);
+        @apply outline-none border-aura-primary;
+        box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
     }
 }
 

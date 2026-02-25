@@ -1,6 +1,6 @@
 import React from 'react';
 
-/* ─── Print-Optimized, A4-Perfect Resume Template ─── */
+/* ─── Harvard Business School / Top-Tier Executive Resume Template ─── */
 const ResumeView = React.forwardRef(({ resumeData }, ref) => {
     const { personal, personal_profile, education, professional_qualifications, work_experience, extra_curricular } = resumeData;
 
@@ -9,33 +9,32 @@ const ResumeView = React.forwardRef(({ resumeData }, ref) => {
             ref={ref}
             className="cv-document"
             style={{
-                fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+                fontFamily: "'Georgia', 'Garamond', 'Times New Roman', serif",
                 fontSize: '10pt',
-                lineHeight: '1.45',
-                /* Exact A4: 210mm x 297mm. At 96dpi = 794px x 1123px */
+                lineHeight: '1.4',
                 width: '794px',
                 minHeight: '1123px',
-                padding: '48px 56px',
+                padding: '50px 60px',
                 boxSizing: 'border-box',
-                color: '#1a1a1a',
+                color: '#0f172a',
                 position: 'relative',
                 backgroundColor: '#ffffff',
-                /* Ensure crisp text rendering for screenshots */
                 WebkitFontSmoothing: 'antialiased',
                 MozOsxFontSmoothing: 'grayscale',
                 textRendering: 'optimizeLegibility',
             }}
         >
             {/* ═══ DOCUMENT HEADER ═══ */}
-            <header className="cv-section" style={{ marginBottom: '18px', borderBottom: '2.5px solid #111', paddingBottom: '14px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+            <header style={{ marginBottom: '14px', textAlign: 'center', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
                 <h1 style={{
-                    fontFamily: "'Georgia', 'Merriweather', serif",
-                    fontSize: '26pt',
-                    fontWeight: 900,
+                    fontFamily: "'Georgia', 'Garamond', serif",
+                    fontSize: '24pt',
+                    fontWeight: 700,
                     color: '#000',
                     margin: '0 0 6px 0',
-                    lineHeight: '1.1',
-                    letterSpacing: '-0.3px'
+                    lineHeight: '1.15',
+                    letterSpacing: '0.5px',
+                    textTransform: 'uppercase',
                 }}>
                     {personal?.name || 'Untitled Document'}
                 </h1>
@@ -44,39 +43,48 @@ const ResumeView = React.forwardRef(({ resumeData }, ref) => {
                     display: 'flex',
                     flexWrap: 'wrap',
                     alignItems: 'center',
-                    gap: '12px',
-                    fontSize: '8.5pt',
-                    color: '#444',
-                    fontFamily: "'JetBrains Mono', 'Courier New', monospace",
-                    letterSpacing: '0.2px'
+                    justifyContent: 'center',
+                    gap: '0',
+                    fontSize: '9pt',
+                    color: '#334155',
+                    fontFamily: "'Georgia', serif",
+                    lineHeight: '1.5',
                 }}>
-                    {personal?.email && (
-                        <a href={`mailto:${personal.email}`} style={{ color: '#111', textDecoration: 'none' }}>
-                            {personal.email}
-                        </a>
-                    )}
-                    {(personal?.email && personal?.phone) && <span style={{ color: '#bbb' }}>•</span>}
-                    {personal?.phone && <span style={{ color: '#111' }}>{personal.phone}</span>}
-                    {(personal?.phone && personal?.location) && <span style={{ color: '#bbb' }}>•</span>}
-                    {personal?.location && <span style={{ color: '#111' }}>{personal.location}</span>}
-                    {(personal?.location && personal?.linkedin) && <span style={{ color: '#bbb' }}>•</span>}
-                    {personal?.linkedin && (
-                        <a href={personal.linkedin} target="_blank" rel="noreferrer" style={{ color: '#111', textDecoration: 'none' }}>
-                            LinkedIn
-                        </a>
-                    )}
+                    {[
+                        personal?.email && (
+                            <a key="email" href={`mailto:${personal.email}`} style={{ color: '#334155', textDecoration: 'none' }}>
+                                {personal.email}
+                            </a>
+                        ),
+                        personal?.phone && <span key="phone">{personal.phone}</span>,
+                        personal?.location && <span key="location">{personal.location}</span>,
+                        personal?.linkedin && (
+                            <a key="linkedin" href={personal.linkedin} target="_blank" rel="noreferrer" style={{ color: '#334155', textDecoration: 'none' }}>
+                                LinkedIn
+                            </a>
+                        ),
+                    ].filter(Boolean).reduce((acc, el, i, arr) => {
+                        acc.push(el);
+                        if (i < arr.length - 1) {
+                            acc.push(<span key={`sep-${i}`} style={{ margin: '0 8px', color: '#94a3b8' }}>|</span>);
+                        }
+                        return acc;
+                    }, [])}
                 </div>
+
+                {/* Thick header rule */}
+                <div style={{ borderBottom: '2px solid #000', marginTop: '12px' }} />
             </header>
 
-            {/* ═══ STRATEGIC PROFILE ═══ */}
+            {/* ═══ PROFESSIONAL SUMMARY ═══ */}
             {personal_profile && (
-                <section className="cv-section" style={{ marginBottom: '16px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                <section style={{ marginBottom: '16px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
                     <p style={{
                         margin: 0,
                         fontSize: '9.5pt',
-                        lineHeight: '1.55',
-                        color: '#222',
-                        textAlign: 'justify'
+                        lineHeight: '1.5',
+                        color: '#1e293b',
+                        textAlign: 'justify',
                     }}>
                         {personal_profile}
                     </p>
@@ -88,30 +96,34 @@ const ResumeView = React.forwardRef(({ resumeData }, ref) => {
                 <section style={{ marginBottom: '16px' }}>
                     <SectionHeader>Experience</SectionHeader>
                     {work_experience.map((job, idx) => (
-                        <div key={idx} className="cv-entry" style={{ marginBottom: '14px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                        <div key={idx} style={{ marginBottom: '12px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                            {/* Row 1: Company (bold) — Dates */}
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1px' }}>
-                                <h3 style={{ margin: 0, fontSize: '10.5pt', fontWeight: 700, color: '#000' }}>
+                                <h3 style={{ margin: 0, fontSize: '10pt', fontWeight: 700, color: '#000' }}>
                                     {job.company}
                                 </h3>
-                                <span style={{ fontSize: '9pt', fontWeight: 600, color: '#111', whiteSpace: 'nowrap' }}>
+                                <span style={{ fontSize: '9pt', color: '#334155', whiteSpace: 'nowrap', fontWeight: 400 }}>
                                     {job.period}
                                 </span>
                             </div>
 
-                            <div style={{ fontSize: '9.5pt', fontStyle: 'italic', color: '#333', marginBottom: '5px' }}>
+                            {/* Row 2: Role (italic) */}
+                            <div style={{ fontSize: '9.5pt', fontStyle: 'italic', color: '#334155', marginBottom: '4px' }}>
                                 {job.role}
                             </div>
 
+                            {/* Context paragraph */}
                             {job.context && (
-                                <p style={{ margin: '0 0 5px 0', fontSize: '9pt', color: '#444', lineHeight: '1.45' }}>
+                                <p style={{ margin: '0 0 4px 0', fontSize: '9pt', color: '#475569', lineHeight: '1.45', textAlign: 'justify' }}>
                                     {job.context}
                                 </p>
                             )}
 
+                            {/* Bullet points */}
                             {job.achievements && job.achievements.length > 0 && (
-                                <ul style={{ margin: '3px 0 0 14px', padding: 0, color: '#222', listStyleType: 'disc' }}>
+                                <ul style={{ margin: '2px 0 0 16px', padding: 0, color: '#1e293b', listStyleType: 'disc' }}>
                                     {job.achievements.map((achieve, aIdx) => (
-                                        <li key={aIdx} style={{ marginBottom: '3px', paddingLeft: '3px', textAlign: 'justify', lineHeight: '1.45', fontSize: '9.5pt' }}>
+                                        <li key={aIdx} style={{ marginBottom: '2px', paddingLeft: '2px', textAlign: 'justify', lineHeight: '1.45', fontSize: '9.5pt' }}>
                                             {achieve}
                                         </li>
                                     ))}
@@ -127,20 +139,20 @@ const ResumeView = React.forwardRef(({ resumeData }, ref) => {
                 <section style={{ marginBottom: '16px' }}>
                     <SectionHeader>Education</SectionHeader>
                     {education.map((edu, idx) => (
-                        <div key={idx} className="cv-entry" style={{ marginBottom: '10px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                        <div key={idx} style={{ marginBottom: '10px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1px' }}>
                                 <h3 style={{ margin: 0, fontSize: '10pt', fontWeight: 700, color: '#000' }}>
                                     {edu.institution}
                                 </h3>
-                                <span style={{ fontSize: '9pt', fontWeight: 600, color: '#111', whiteSpace: 'nowrap' }}>
+                                <span style={{ fontSize: '9pt', color: '#334155', whiteSpace: 'nowrap', fontWeight: 400 }}>
                                     {edu.period}
                                 </span>
                             </div>
-                            <div style={{ fontSize: '9.5pt', color: '#222', fontStyle: 'italic', marginBottom: '3px' }}>
+                            <div style={{ fontSize: '9.5pt', color: '#334155', fontStyle: 'italic', marginBottom: '3px' }}>
                                 {edu.degree}
                             </div>
                             {edu.bullets && edu.bullets.length > 0 && (
-                                <ul style={{ margin: '3px 0 0 14px', padding: 0, color: '#333', listStyleType: 'circle' }}>
+                                <ul style={{ margin: '2px 0 0 16px', padding: 0, color: '#1e293b', listStyleType: 'disc' }}>
                                     {edu.bullets.map((b, bi) => (
                                         <li key={bi} style={{ marginBottom: '2px', textAlign: 'justify', fontSize: '9pt', lineHeight: '1.45' }} dangerouslySetInnerHTML={{ __html: b }} />
                                     ))}
@@ -153,15 +165,15 @@ const ResumeView = React.forwardRef(({ resumeData }, ref) => {
 
             {/* ═══ TECHNICAL SKILLS / QUALIFICATIONS ═══ */}
             {professional_qualifications && professional_qualifications.length > 0 && (
-                <section className="cv-section" style={{ marginBottom: '16px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                <section style={{ marginBottom: '16px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
                     <SectionHeader>Technical Expertise</SectionHeader>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(110px, auto) 1fr', gap: '6px 14px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(120px, auto) 1fr', gap: '4px 16px' }}>
                         {professional_qualifications.map((qual, idx) => (
                             <React.Fragment key={idx}>
-                                <div style={{ fontSize: '9pt', fontWeight: 700, color: '#000', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                <div style={{ fontSize: '9pt', fontWeight: 700, color: '#000', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
                                     {qual.category}
                                 </div>
-                                <div style={{ fontSize: '9.5pt', color: '#222' }}>
+                                <div style={{ fontSize: '9.5pt', color: '#1e293b' }}>
                                     {qual.skills}
                                 </div>
                             </React.Fragment>
@@ -172,21 +184,21 @@ const ResumeView = React.forwardRef(({ resumeData }, ref) => {
 
             {/* ═══ LEADERSHIP & EXTRA-CURRICULAR ═══ */}
             {extra_curricular && extra_curricular.length > 0 && (
-                <section className="cv-section" style={{ marginBottom: '16px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                <section style={{ marginBottom: '16px' }}>
                     <SectionHeader>Leadership & Initiatives</SectionHeader>
                     {extra_curricular.map((ec, idx) => (
-                        <div key={idx} className="cv-entry" style={{ marginBottom: '10px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                        <div key={idx} style={{ marginBottom: '10px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1px' }}>
-                                <div style={{ fontSize: '9.5pt', color: '#111' }}>
+                                <div style={{ fontSize: '9.5pt', color: '#0f172a' }}>
                                     <span style={{ fontWeight: 700 }}>{ec.role}</span>
-                                    {ec.organization && <span>, {ec.organization}</span>}
+                                    {ec.organization && <span style={{ fontStyle: 'italic' }}>, {ec.organization}</span>}
                                 </div>
-                                <span style={{ fontSize: '9pt', fontWeight: 600, color: '#333', whiteSpace: 'nowrap' }}>
+                                <span style={{ fontSize: '9pt', color: '#334155', whiteSpace: 'nowrap', fontWeight: 400 }}>
                                     {ec.period}
                                 </span>
                             </div>
                             {ec.bullets && ec.bullets.length > 0 && (
-                                <ul style={{ margin: '3px 0 0 14px', padding: 0, color: '#333', listStyleType: 'square' }}>
+                                <ul style={{ margin: '2px 0 0 16px', padding: 0, color: '#1e293b', listStyleType: 'disc' }}>
                                     {ec.bullets.map((b, bi) => (
                                         <li key={bi} style={{ marginBottom: '2px', fontSize: '9pt', lineHeight: '1.45' }}>{b}</li>
                                     ))}
@@ -203,21 +215,20 @@ const ResumeView = React.forwardRef(({ resumeData }, ref) => {
 
 ResumeView.displayName = 'ResumeView';
 
-/* ─── Premium Executive Section Header ─── */
-
+/* ─── Harvard-Standard Section Header ─── */
 const SectionHeader = ({ children }) => (
     <h2 style={{
-        margin: '0 0 10px 0',
+        margin: '4px 0 8px 0',
         paddingBottom: '3px',
-        borderBottom: '1px solid #bbb',
-        fontFamily: "'Inter', sans-serif",
-        fontSize: '10pt',
-        fontWeight: 800,
+        borderBottom: '1px solid #000',
+        fontFamily: "'Georgia', serif",
+        fontSize: '10.5pt',
+        fontWeight: 700,
         color: '#000',
         textTransform: 'uppercase',
-        letterSpacing: '1.5px',
+        letterSpacing: '2px',
         pageBreakAfter: 'avoid',
-        breakAfter: 'avoid'
+        breakAfter: 'avoid',
     }}>
         {children}
     </h2>

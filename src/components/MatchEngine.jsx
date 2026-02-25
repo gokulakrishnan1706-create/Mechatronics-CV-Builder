@@ -1,10 +1,9 @@
-/* eslint-disable no-unused-vars */
 import React, { useState } from 'react';
 
 import { Target, BrainCircuit, Loader2, Terminal, Sparkles, AlertTriangle, ArrowRight } from 'lucide-react';
 import MatchScoreCard from './MatchScoreCard';
 
-const MatchEngine = ({ onTailor, aiFeed, matchScore, missingKeywords }) => {
+const MatchEngine = ({ onTailor, aiFeed, matchScore, missingKeywords, extraMetrics }) => {
     const [jd, setJd] = useState('');
 
     const hasResults = matchScore !== null && matchScore > 0;
@@ -14,39 +13,77 @@ const MatchEngine = ({ onTailor, aiFeed, matchScore, missingKeywords }) => {
 
             <div className="mb-5 px-1 flex items-center justify-between">
                 <div>
-                    <h3 className="text-sm font-bold text-white tracking-tight">AI Match Engine</h3>
-                    <p className="text-[11px] text-white/50 mt-1">Paste a Job Description to tailor your CV</p>
+                    <h3 className="text-sm font-bold text-slate-900 tracking-tight">AI Match Engine</h3>
+                    <p className="text-[11px] text-slate-500 mt-1">Paste a Job Description to tailor your CV</p>
                 </div>
-                <div className="bg-gradient-to-br from-amber-500/20 to-orange-500/10 p-2.5 rounded-xl border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
-                    <Target className="h-4 w-4 text-amber-400" />
+                <div className="bg-amber-50 p-2.5 rounded-lg border border-amber-200">
+                    <Target className="h-4 w-4 text-amber-600" />
                 </div>
             </div>
 
-            {/* ═══ SCORE CARD ═══ */}
-            {hasResults && <MatchScoreCard score={matchScore} />}
+            {hasResults && (
+                <div className="space-y-6 mb-8">
+                    {/* ═══ SCORE CARD & CRITIQUE ═══ */}
+                    <MatchScoreCard score={matchScore} impactCritique={extraMetrics?.impactCritique} />
 
-            {/* ═══ MISSING KEYWORDS ═══ */}
-            {missingKeywords && missingKeywords.length > 0 && (
-                <div
-                    className="mb-6 p-5 bg-black/40 backdrop-blur-md rounded-2xl border border-amber-500/20 relative overflow-hidden group shadow-lg"
-                >
-                    <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-transparent pointer-events-none" />
-                    <div className="relative z-10">
-                        <div className="flex items-center gap-2 mb-4">
-                            <AlertTriangle className="h-4 w-4 text-amber-400" />
-                            <span className="text-xs font-bold text-amber-400 uppercase tracking-widest">Keywords Required</span>
+                    {/* ═══ SEMANTIC INSIGHTS ═══ */}
+                    {extraMetrics && (
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col items-center justify-center">
+                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 text-center">Semantic Match</span>
+                                <span className="text-2xl font-black text-brand-primary">{extraMetrics.semanticScore}%</span>
+                            </div>
+                            <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col items-center justify-center">
+                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 text-center">Impact Density</span>
+                                <span className="text-2xl font-black text-emerald-600">+{extraMetrics.impactScore}</span>
+                            </div>
                         </div>
-                        <div className="flex flex-wrap gap-2 cursor-default">
-                            {missingKeywords.map((kw, i) => (
-                                <span
-                                    key={i}
-                                    className="px-3 py-1.5 text-[11px] font-bold rounded-lg bg-amber-500/10 text-amber-300 border border-amber-500/20 hover:bg-amber-500/20 hover:border-amber-500/40 transition-all shadow-sm"
-                                >
-                                    {kw}
-                                </span>
+                    )}
+
+                    {/* ═══ MISSING KEYWORDS ═══ */}
+                    {missingKeywords && missingKeywords.length > 0 && (
+                        <div className="p-5 bg-white rounded-xl border border-slate-200 relative overflow-hidden shadow-sm">
+                            <div className="relative z-10">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <AlertTriangle className="h-4 w-4 text-amber-500" />
+                                    <span className="text-xs font-bold text-amber-600 uppercase tracking-widest">Keywords Required</span>
+                                </div>
+                                <div className="flex flex-wrap gap-2 cursor-default">
+                                    {missingKeywords.map((kw, i) => (
+                                        <span
+                                            key={i}
+                                            className="px-2.5 py-1 text-[11px] font-bold rounded-full bg-amber-50 text-amber-700 border border-amber-200 transition-colors"
+                                        >
+                                            {kw}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ═══ CONTEXTUAL AI SUGGESTIONS ═══ */}
+                    {extraMetrics?.contextualSuggestions?.length > 0 && (
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-2 mb-2 px-1">
+                                <Sparkles className="h-4 w-4 text-brand-primary" />
+                                <h4 className="text-xs font-bold text-slate-900 tracking-wide uppercase">AI Rewrite Suggestions</h4>
+                            </div>
+                            {extraMetrics.contextualSuggestions.map((sug, i) => (
+                                <div key={i} className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 hover:border-brand-primary/30 transition-colors">
+                                    <div className="flex gap-3">
+                                        <Sparkles className="h-4 w-4 text-brand-primary shrink-0 mt-0.5" />
+                                        <div>
+                                            <h5 className="text-slate-900 font-semibold text-sm">{sug.target}</h5>
+                                            <p className="text-slate-600 text-sm mt-1 leading-relaxed">
+                                                {sug.suggestion}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
                             ))}
                         </div>
-                    </div>
+                    )}
                 </div>
             )}
             {/* ═══ STATUS FEED (Terminal) ═══ */}
@@ -54,20 +91,20 @@ const MatchEngine = ({ onTailor, aiFeed, matchScore, missingKeywords }) => {
                 <div
                     className="mb-8 relative group"
                 >
-                    {/* Glowing Background Blur */}
-                    <div className="absolute -inset-[1px] bg-gradient-to-b from-aura-primary/30 to-aura-accent/30 rounded-2xl blur-md opacity-50 group-hover:opacity-100 transition-opacity duration-500" />
+                    {/* Background border glow */}
+                    <div className="absolute -inset-[1px] bg-slate-200/50 rounded-xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                    <div className="relative bg-black/60 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
+                    <div className="relative bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
                         {/* Terminal Header */}
-                        <div className="bg-white/5 px-4 py-3 border-b border-white/5 flex items-center justify-between">
+                        <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                <Terminal className="h-4 w-4 text-white/50" />
-                                <span className="text-[10px] font-mono font-bold text-white/60 uppercase tracking-widest flex items-center gap-2">
+                                <Terminal className="h-4 w-4 text-slate-400" />
+                                <span className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
                                     System Analysis
                                     {aiFeed[0]?.type !== 'success' && aiFeed[0]?.type !== 'error' && (
                                         <span className="flex gap-1">
                                             {[0, 1, 2].map(i => (
-                                                <span key={i} className="w-1.5 h-1.5 bg-aura-primary rounded-full animate-bounce" style={{ animationDelay: `${i * 150}ms` }} />
+                                                <span key={i} className="w-1.5 h-1.5 bg-brand-primary rounded-full animate-bounce" style={{ animationDelay: `${i * 150}ms` }} />
                                             ))}
                                         </span>
                                     )}
@@ -87,17 +124,17 @@ const MatchEngine = ({ onTailor, aiFeed, matchScore, missingKeywords }) => {
                                     key={index}
                                     className="flex items-start gap-3 justify-start"
                                 >
-                                    <span className="text-white/30 shrink-0 w-16 select-none font-bold">[{msg.time?.split(' ')[0]}]</span>
-                                    <span className={`shrink-0 ${msg.type === 'success' ? 'text-emerald-400' :
-                                        msg.type === 'error' ? 'text-rose-400' :
-                                            msg.type === 'warning' ? 'text-amber-400' :
-                                                'text-aura-primary'
+                                    <span className="text-slate-400 shrink-0 w-16 select-none font-bold">[{msg.time?.split(' ')[0]}]</span>
+                                    <span className={`shrink-0 ${msg.type === 'success' ? 'text-emerald-500' :
+                                        msg.type === 'error' ? 'text-rose-500' :
+                                            msg.type === 'warning' ? 'text-amber-500' :
+                                                'text-brand-primary'
                                         }`}>
                                         {msg.type === 'success' ? '✔' : msg.type === 'error' ? '✖' : msg.type === 'warning' ? '⚠' : '❯'}
                                     </span>
-                                    <span className={`leading-snug ${msg.type === 'success' ? 'text-white/90' :
-                                        msg.type === 'error' ? 'text-rose-300' :
-                                            'text-white/70'
+                                    <span className={`leading-snug ${msg.type === 'success' ? 'text-slate-900' :
+                                        msg.type === 'error' ? 'text-rose-600' :
+                                            'text-slate-600'
                                         }`}>
                                         {msg.text}
                                     </span>
@@ -107,9 +144,9 @@ const MatchEngine = ({ onTailor, aiFeed, matchScore, missingKeywords }) => {
 
                         {/* Progress Bar */}
                         {aiFeed[0]?.type !== 'success' && aiFeed[0]?.type !== 'error' && (
-                            <div className="h-[2px] w-full bg-white/5">
+                            <div className="h-[2px] w-full bg-slate-200">
                                 <div
-                                    className="h-full bg-gradient-to-r from-aura-primary via-aura-glow to-aura-accent shadow-[0_0_10px_rgba(139,92,246,0.5)]"
+                                    className="h-full bg-brand-primary shadow-sm"
                                 />
                             </div>
                         )}
@@ -120,22 +157,22 @@ const MatchEngine = ({ onTailor, aiFeed, matchScore, missingKeywords }) => {
             {/* ═══ JD INPUT ═══ */}
             <div className="flex flex-col flex-1 space-y-4">
                 {!hasResults && aiFeed.length === 0 && (
-                    <div className="text-center py-8 px-6 bg-white/5 border border-white/5 rounded-2xl mb-4">
-                        <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-500/10 border border-amber-500/30 flex items-center justify-center mb-5 shadow-[0_0_20px_rgba(245,158,11,0.15)]">
-                            <Sparkles className="h-6 w-6 text-amber-400" />
+                    <div className="text-center py-8 px-6 bg-white border border-slate-200 rounded-xl mb-4 shadow-sm">
+                        <div className="mx-auto w-14 h-14 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center mb-5">
+                            <Sparkles className="h-6 w-6 text-amber-500" />
                         </div>
-                        <h4 className="text-base font-bold text-white mb-3">How it Works</h4>
-                        <div className="space-y-3 text-xs text-white/50 text-left max-w-[240px] mx-auto">
+                        <h4 className="text-base font-bold text-slate-900 mb-3">How it Works</h4>
+                        <div className="space-y-3 text-xs text-slate-500 text-left max-w-[240px] mx-auto">
                             <div className="flex items-center gap-3">
-                                <span className="w-6 h-6 rounded-lg bg-black/40 border border-white/10 font-mono flex items-center justify-center text-white/60 font-bold shadow-inner">1</span>
+                                <span className="w-6 h-6 rounded-md bg-slate-50 border border-slate-200 font-mono flex items-center justify-center text-slate-500 font-bold">1</span>
                                 <span>Paste target Job Description</span>
                             </div>
                             <div className="flex items-center gap-3">
-                                <span className="w-6 h-6 rounded-lg bg-black/40 border border-white/10 font-mono flex items-center justify-center text-white/60 font-bold shadow-inner">2</span>
+                                <span className="w-6 h-6 rounded-md bg-slate-50 border border-slate-200 font-mono flex items-center justify-center text-slate-500 font-bold">2</span>
                                 <span>AI rewrites your CV</span>
                             </div>
                             <div className="flex items-center gap-3">
-                                <span className="w-6 h-6 rounded-lg bg-black/40 border border-white/10 font-mono flex items-center justify-center text-white/60 font-bold shadow-inner">3</span>
+                                <span className="w-6 h-6 rounded-md bg-slate-50 border border-slate-200 font-mono flex items-center justify-center text-slate-500 font-bold">3</span>
                                 <span>Review the match score</span>
                             </div>
                         </div>
@@ -143,16 +180,16 @@ const MatchEngine = ({ onTailor, aiFeed, matchScore, missingKeywords }) => {
                 )}
 
                 <div className="relative flex-1 group/jd">
-                    <div className="absolute -inset-[1px] bg-gradient-to-b from-aura-primary/20 to-transparent rounded-2xl blur-sm opacity-0 group-focus-within/jd:opacity-100 transition-opacity duration-500" />
+                    <div className="absolute -inset-[1px] bg-slate-200/50 rounded-xl blur-sm opacity-0 group-focus-within/jd:opacity-100 transition-opacity duration-500" />
                     <textarea
                         value={jd}
                         onChange={(e) => setJd(e.target.value)}
                         placeholder="Paste target Job Description here..."
                         maxLength={15000}
-                        className="relative w-full h-full min-h-[200px] bg-black/40 backdrop-blur-md border border-white/10 group-focus-within/jd:border-aura-primary/50 group-focus-within/jd:bg-black/60 rounded-2xl text-sm text-white p-5 resize-none focus:outline-none focus:ring-0 placeholder:text-white/20 custom-scrollbar transition-all font-medium leading-relaxed"
+                        className="relative w-full h-full min-h-[200px] bg-white border border-slate-300 group-focus-within/jd:border-brand-primary rounded-xl text-sm text-slate-900 p-5 resize-none focus:outline-none focus:ring-2 focus:ring-brand-primary/20 placeholder-slate-400 shadow-sm custom-scrollbar transition-all font-medium leading-relaxed"
                     />
                     {jd.length > 0 && (
-                        <span className="absolute bottom-4 right-4 text-[10px] font-mono font-bold text-white/30 bg-black/60 px-2 py-1 rounded-md border border-white/10 backdrop-blur-sm z-10">{jd.split(/\s+/).filter(Boolean).length} words</span>
+                        <span className="absolute bottom-4 right-4 text-[10px] font-mono font-bold text-slate-500 bg-slate-50 px-2 py-1 rounded-md border border-slate-200 z-10">{jd.split(/\s+/).filter(Boolean).length} words</span>
                     )}
                 </div>
 
@@ -160,13 +197,11 @@ const MatchEngine = ({ onTailor, aiFeed, matchScore, missingKeywords }) => {
                 <button
                     onClick={() => onTailor(jd)}
                     disabled={!jd.trim()}
-                    className="w-full py-4 px-6 bg-gradient-to-r from-aura-primary to-aura-glow border border-white/20 hover:border-white/40 text-white rounded-2xl font-bold flex items-center justify-center gap-3 transition-all duration-300 active:scale-[0.98] disabled:opacity-40 disabled:grayscale disabled:hover:border-white/20 disabled:active:scale-100 group/btn relative overflow-hidden shadow-[0_0_30px_rgba(139,92,246,0.3)] hover:shadow-[0_0_40px_rgba(139,92,246,0.5)]"
+                    className="w-full py-4 px-6 bg-brand-primary hover:bg-blue-700 border border-transparent text-white rounded-xl font-bold flex items-center justify-center gap-3 transition-all duration-300 active:scale-[0.98] disabled:opacity-40 disabled:grayscale disabled:hover:bg-brand-primary disabled:active:scale-100 group/btn relative overflow-hidden shadow-sm cursor-pointer"
                 >
-                    <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent" />
-                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-                    <BrainCircuit className="h-5 w-5 text-white group-hover/btn:rotate-12 transition-transform drop-shadow-md" />
-                    <span className="text-sm tracking-wide drop-shadow-md">Run AI Synthesis</span>
-                    <ArrowRight className="h-4 w-4 text-white/70 group-hover/btn:translate-x-1 transition-transform" />
+                    <BrainCircuit className="h-5 w-5 text-white group-hover/btn:rotate-12 transition-transform" />
+                    <span className="text-sm tracking-wide">Run AI Synthesis</span>
+                    <ArrowRight className="h-4 w-4 text-white/80 group-hover/btn:translate-x-1 transition-transform" />
                 </button>
             </div>
         </div >
