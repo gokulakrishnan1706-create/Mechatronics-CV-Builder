@@ -2,7 +2,7 @@
 import React, { useRef, useState, useMemo } from 'react';
 
 import { ArrowLeft, Download, Loader2, ChevronDown, FileIcon, FileType, RotateCcw, Settings, Target, Command, ZoomIn, ZoomOut, FileText, CheckCircle } from 'lucide-react';
-import { generatePDF } from '../services/PDFTemplates';
+import html2pdf from 'html2pdf.js';
 import DataHub from './DataHub';
 import MatchEngine from './MatchEngine';
 import { ResumeView, TEMPLATES } from './TemplateEngine';
@@ -72,26 +72,55 @@ const BuilderWorkspace = ({ resumeData, onUpdate, onTailor, onReset, aiFeed, mat
         try {
             const filename = getSafeFilename('pdf');
 
-            // Generate true vector PDF — selectable text, ATS-friendly, perfect page breaks
-            const blob = await generatePDF(resumeData, activeTemplate);
+            // Target the live .cv-document element directly (NOT the ref wrapper)
+            // The ref points to the outer zoom wrapper — wrong element, produces blank PDFs
+            const cvElement = document.querySelector('.cv-document');
+            if (!cvElement) throw new Error("Resume element not found in DOM. Ensure the preview is visible.");
 
-            // Bulletproof Chrome download
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            a.rel = 'noopener';
-            a.style.display = 'none';
-            document.body.appendChild(a);
-            a.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
-            setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 10000);
+            // Strip zoom transform before capture — CSS transforms break html2canvas scaling
+            const zoomWrapper = cvElement.closest('[style*="transform"]');
+            let savedTransform = '';
+            if (zoomWrapper) {
+                savedTransform = zoomWrapper.style.transform;
+                zoomWrapper.style.transform = 'none';
+            }
+
+            // Brief pause for DOM to repaint after transform removal
+            await new Promise(resolve => setTimeout(resolve, 200));
+
+            const pdfBlob = await html2pdf()
+                .set({
+                    margin: [5, 0, 5, 0],
+                    filename: filename,
+                    image: { type: 'jpeg', quality: 1.0 },
+                    html2canvas: { scale: 2, useCORS: true, logging: false },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+                })
+                .from(cvElement)
+                .outputPdf('blob');
+
+            // Restore zoom transform
+            if (zoomWrapper && savedTransform) {
+                zoomWrapper.style.transform = savedTransform;
+            }
+
+            console.log('[PDF] Blob ready. Size:', pdfBlob.size);
+            if (pdfBlob.size < 10000) {
+                throw new Error("PDF is suspiciously small — the wrong element may have been captured.");
+            }
+
+            // Wrap in explicit PDF MIME type to prevent UUID filename bug in Chrome
+            const finalBlob = new Blob([pdfBlob], { type: 'application/pdf' });
+            downloadBlob(finalBlob, filename);
 
             setDownloadSuccess(true);
             setTimeout(() => setDownloadSuccess(false), 3000);
         } catch (error) {
-            console.error('[PDF] Error:', error);
-            alert('PDF generation failed: ' + error.message);
+            console.error("[PDF] FATAL ERROR:", error);
+            alert("PDF generation failed: " + error.message);
         } finally {
+            // Always clear downloading state, even on error
             setTimeout(() => setIsDownloading(false), 1500);
         }
     };
