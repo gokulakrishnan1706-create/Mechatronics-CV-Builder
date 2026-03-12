@@ -1,19 +1,32 @@
 /* eslint-disable no-unused-vars */
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Homepage from './components/Homepage';
 import BuilderWorkspace from './components/BuilderWorkspace';
 import SmartCV from './components/SmartCV';
 import TemplatePicker from './components/TemplatePicker';
 import PartTimeCVGenerator from './components/PartTimeCVGenerator';
+import AuthModal from './components/AuthModal';
+import UserMenu from './components/UserMenu';
+import SavedCVs from './components/SavedCVs';
 import initialResumeData from './data/resumeData.json';
+import { supabase, saveCV } from './services/supabase';
 
 function App() {
   // 'home' | 'templatepicker' | 'builder' | 'smartcv' | 'parttime'
   const [view, setView] = useState('home');
   const [selectedTemplate, setSelectedTemplate] = useState('classic');
   const [showPartTime, setShowPartTime] = useState(false);
-  // Persistence Logic: Load from localStorage on init
+
+  // ─── Auth state ───
+  const [user, setUser] = useState(null);
+  const [showAuth, setShowAuth] = useState(false);
+  const [showSaved, setShowSaved] = useState(false);
+  const [activeCvId, setActiveCvId] = useState(null);
+  const [activeCvTitle, setActiveCvTitle] = useState('Untitled CV');
+  const [saveStatus, setSaveStatus] = useState(''); // '' | 'saving' | 'saved' | 'error'
+
+  // ─── Resume state ───
   const [resumeData, setResumeData] = useState(() => {
     const saved = localStorage.getItem('aura_resume_cache');
     return saved ? JSON.parse(saved) : initialResumeData;
@@ -24,8 +37,21 @@ function App() {
   const [missingKeywords, setMissingKeywords] = useState([]);
   const [extraMetrics, setExtraMetrics] = useState(null);
 
+  // ─── Supabase auth listener ───
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   // Auto-Save: Sync state to localStorage
-  React.useEffect(() => {
+  useEffect(() => {
     localStorage.setItem('aura_resume_cache', JSON.stringify(resumeData));
   }, [resumeData]);
 
@@ -42,7 +68,6 @@ function App() {
       let current = newData;
       for (let i = 0; i < keys.length - 1; i++) {
         const key = keys[i];
-        // If the NEXT key is a numeric index, ensure current[key] is an array
         const nextKey = keys[i + 1];
         const nextIsIndex = /^\d+$/.test(nextKey);
         if (!current[key]) {
@@ -52,7 +77,6 @@ function App() {
       }
 
       const lastKey = keys[keys.length - 1];
-      // Use numeric index for array mutations (e.g. achievements.0, bullets.2)
       const finalKey = /^\d+$/.test(lastKey) ? parseInt(lastKey, 10) : lastKey;
       current[finalKey] = value;
       return newData;
@@ -72,7 +96,42 @@ function App() {
     setMissingKeywords([]);
     setExtraMetrics(null);
     setAiFeed([]);
+    setActiveCvId(null);
+    setActiveCvTitle('Untitled CV');
     setShowRevertModal(false);
+  };
+
+  // ─── Save CV to Supabase ───
+  const handleSaveToCloud = useCallback(async () => {
+    if (!user) {
+      setShowAuth(true);
+      return;
+    }
+
+    setSaveStatus('saving');
+    try {
+      const title = resumeData.personal?.name
+        ? `${resumeData.personal.name} CV`
+        : activeCvTitle;
+
+      const result = await saveCV(resumeData, title, activeCvId);
+      setActiveCvId(result.id);
+      setActiveCvTitle(result.title);
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus(''), 2500);
+    } catch (err) {
+      console.error('Save error:', err);
+      setSaveStatus('error');
+      setTimeout(() => setSaveStatus(''), 3000);
+    }
+  }, [user, resumeData, activeCvId, activeCvTitle]);
+
+  // ─── Load CV from Supabase ───
+  const handleLoadFromCloud = (data, id, title) => {
+    setResumeData(data);
+    setActiveCvId(id);
+    setActiveCvTitle(title);
+    localStorage.setItem('aura_resume_cache', JSON.stringify(data));
   };
 
   const handleTailor = async (jd) => {
@@ -85,7 +144,6 @@ function App() {
       const { tailorResume } = await import('./services/ai');
 
       addLog("Analyzing Job Description for high-impact keywords...", "info");
-      // Simulated steps for UX while AI processes
       await new Promise(r => setTimeout(r, 600));
       addLog("Cross-referencing mechatronics experience with JD requirements...", "info");
 
@@ -100,9 +158,7 @@ function App() {
         addLog(`${missing_keywords.length} missing keywords identified`, "warning");
       }
 
-      // Overwrite the entire CV state with the newly synthesized, narrative-driven version
       setResumeData(synthesizedCV);
-
       addLog("Total Synthesis Complete. Review your new narrative.", "success");
     } catch (err) {
       console.error(err);
@@ -123,6 +179,47 @@ function App() {
 
   return (
     <div className="min-h-screen bg-aura-surface font-sans text-aura-dark selection:bg-aura-primary/20 selection:text-aura-primary relative">
+
+      {/* ═══ TOP-RIGHT AUTH BAR ═══ */}
+      <div className="fixed top-4 right-4 z-[100] flex items-center gap-2">
+        {saveStatus === 'saved' && (
+          <motion.span
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0 }}
+            className="text-[11px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full"
+          >
+            ✓ Saved
+          </motion.span>
+        )}
+        {saveStatus === 'saving' && (
+          <span className="text-[11px] font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-3 py-1.5 rounded-full animate-pulse">
+            Saving…
+          </span>
+        )}
+        {saveStatus === 'error' && (
+          <span className="text-[11px] font-bold text-red-400 bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-full">
+            Save failed
+          </span>
+        )}
+
+        {user ? (
+          <UserMenu
+            user={user}
+            onSave={handleSaveToCloud}
+            onOpenSaved={() => setShowSaved(true)}
+            onSignOut={() => { setUser(null); setActiveCvId(null); }}
+          />
+        ) : (
+          <button
+            onClick={() => setShowAuth(true)}
+            className="px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-bold transition-all cursor-pointer active:scale-95"
+          >
+            Sign In
+          </button>
+        )}
+      </div>
+
       <AnimatePresence mode="wait">
         {view === 'home' ? (
           <motion.div key="home" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }}>
@@ -174,6 +271,23 @@ function App() {
       <AnimatePresence>
         {showPartTime && (
           <PartTimeCVGenerator onClose={() => setShowPartTime(false)} />
+        )}
+      </AnimatePresence>
+
+      {/* Auth Modal */}
+      <AnimatePresence>
+        {showAuth && (
+          <AuthModal onClose={() => setShowAuth(false)} />
+        )}
+      </AnimatePresence>
+
+      {/* Saved CVs Modal */}
+      <AnimatePresence>
+        {showSaved && (
+          <SavedCVs
+            onClose={() => setShowSaved(false)}
+            onLoad={handleLoadFromCloud}
+          />
         )}
       </AnimatePresence>
 
