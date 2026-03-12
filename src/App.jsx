@@ -156,7 +156,16 @@ function App() {
           </motion.div>
         ) : (
           <motion.div key="smartcv" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }}>
-            <SmartCV onBack={() => setView('home')} />
+            <SmartCV
+              onBack={() => setView('home')}
+              resumeData={resumeData}
+              onUpdate={handleDataUpdate}
+              onTailor={handleTailor}
+              aiFeed={aiFeed}
+              matchScore={matchScore}
+              missingKeywords={missingKeywords}
+              extraMetrics={extraMetrics}
+            />
           </motion.div>
         )}
       </AnimatePresence>
