@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { X, Loader2, Trash2, FileText, Clock, AlertTriangle, FolderOpen } from 'lucide-react';
 import { fetchSavedCVs, loadCV, deleteCV } from '../services/supabase';
 
