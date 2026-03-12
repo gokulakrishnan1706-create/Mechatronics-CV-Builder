@@ -344,8 +344,8 @@ export const ExecutivePDF = ({ resumeData }) => {
 // ═══════════════════════════════════════════════════════════════
 // PART-TIME CV PDF
 // ═══════════════════════════════════════════════════════════════
-const SC = { warehouse: '#f59e0b', carehome: '#ec4899', freelance: '#8b5cf6' };
-const SL = { warehouse: 'Warehouse & Logistics', carehome: 'Care Home & Support Work', freelance: 'Freelance & Gig Work' };
+const SC = { warehouse: '#f59e0b', carehome: '#ec4899', freelance: '#8b5cf6', retail: '#0ea5e9', kitchen: '#ef4444', hospitality: '#10b981' };
+const SL = { warehouse: 'Warehouse & Logistics', carehome: 'Care Home & Support Work', freelance: 'Freelance & Gig Work', retail: 'Retail & Customer Service', kitchen: 'Kitchen & Catering', hospitality: 'Hospitality & Bar Work' };
 
 const PT = StyleSheet.create({
     page:      { fontFamily: 'Helvetica', fontSize: 10, lineHeight: 1.5, paddingBottom: 40, color: '#1e293b' },
@@ -377,9 +377,15 @@ const PT = StyleSheet.create({
     footer:    { marginTop: 20, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#f1f5f9', fontSize: 8, color: '#94a3b8', textAlign: 'center' },
 });
 
-export const PartTimePDF = ({ data, sector = 'warehouse' }) => {
+export const PartTimePDF = ({ data, sector = 'warehouse', layout = 'two-col' }) => {
     const color = SC[sector] || '#2563EB';
     const { personal, objective, skills, work_experience, education } = data;
+    const isTwo = layout === 'two-col';
+
+    const SecLabel = ({ children }) => (
+        <Text style={[PT.secLbl, { color, borderBottomColor: color }]}>{children}</Text>
+    );
+
     return (
         <Document title={`${personal?.name || 'CV'} - Part Time`} author={personal?.name}>
             <Page size="A4" style={PT.page}>
@@ -389,60 +395,249 @@ export const PartTimePDF = ({ data, sector = 'warehouse' }) => {
                     <Text style={PT.contact}>{buildContactLine(personal)}</Text>
                 </View>
                 <View style={PT.body}>
-                    {objective?.trim() && (
+                    {objective?.trim() ? (
                         <View style={[PT.stmtBox, { borderLeftColor: color }]}>
-                            <Text style={[PT.secLbl, { color, borderBottomColor: color }]}>Personal Statement</Text>
+                            <SecLabel>Personal Statement</SecLabel>
                             <Text style={PT.stmtTxt}>{objective}</Text>
                         </View>
-                    )}
-                    <View style={PT.twoCol}>
-                        <View style={PT.leftCol}>
-                            {skills?.filter(s => s.trim()).length > 0 && <View style={{ marginBottom: 16 }}>
-                                <Text style={[PT.secLbl, { color, borderBottomColor: color }]}>Key Skills</Text>
-                                {skills.filter(s => s.trim()).map((sk, i) => (
-                                    <View key={i} style={PT.skillItem}>
-                                        <Text style={[PT.skillDot, { color }]}>▸</Text>
-                                        <Text style={PT.skillTxt}>{sk}</Text>
-                                    </View>
-                                ))}
-                            </View>}
-                            {education?.length > 0 && <View>
-                                <Text style={[PT.secLbl, { color, borderBottomColor: color }]}>Education</Text>
-                                {education.map((edu, i) => (
-                                    <View key={i}>
-                                        <Text style={PT.eduInst}>{edu.institution || '—'}</Text>
-                                        {edu.degree ? <Text style={[PT.eduDeg, { color }]}>{edu.degree}</Text> : null}
-                                        {edu.period ? <Text style={PT.eduPeriod}>{edu.period}</Text> : null}
-                                    </View>
-                                ))}
-                            </View>}
-                        </View>
-                        <View style={PT.rightCol}>
-                            {work_experience?.length > 0 && <View>
-                                <Text style={[PT.secLbl, { color, borderBottomColor: color }]}>Work Experience</Text>
-                                {work_experience.map((job, i) => (
-                                    <View key={i} style={PT.jobWrap} wrap={false}>
-                                        <View style={PT.jobTopRow}>
-                                            <Text style={PT.jobRole}>{job.role || '—'}</Text>
-                                            {job.period ? <Text style={PT.jobBadge}>{job.period}</Text> : null}
-                                        </View>
-                                        {job.company ? <Text style={[PT.jobCo, { color }]}>{job.company}</Text> : null}
-                                        {job.bullets?.filter(b => b.trim()).map((b, bi) => (
-                                            <View key={bi} style={PT.bul}><Text style={PT.bulDot}>•</Text><Text style={PT.bulTxt}>{b}</Text></View>
+                    ) : null}
+
+                    {isTwo ? (
+                        <View style={PT.twoCol}>
+                            {/* Left col: skills + education */}
+                            <View style={PT.leftCol}>
+                                {skills?.filter(s => s.trim()).length > 0 ? (
+                                    <View style={{ marginBottom: 16 }}>
+                                        <SecLabel>Key Skills</SecLabel>
+                                        {skills.filter(s => s.trim()).map((sk, i) => (
+                                            <View key={i} style={PT.skillItem}>
+                                                <Text style={[PT.skillDot, { color }]}>▸</Text>
+                                                <Text style={PT.skillTxt}>{sk}</Text>
+                                            </View>
                                         ))}
                                     </View>
-                                ))}
-                            </View>}
+                                ) : null}
+                                {education?.filter(e => e.institution?.trim()).length > 0 ? (
+                                    <View>
+                                        <SecLabel>Education</SecLabel>
+                                        {education.filter(e => e.institution?.trim()).map((edu, i) => (
+                                            <View key={i} style={{ marginBottom: 8 }}>
+                                                <Text style={PT.eduInst}>{edu.institution}</Text>
+                                                {edu.degree ? <Text style={[PT.eduDeg, { color }]}>{edu.degree}</Text> : null}
+                                                {edu.period ? <Text style={PT.eduPeriod}>{edu.period}</Text> : null}
+                                            </View>
+                                        ))}
+                                    </View>
+                                ) : null}
+                            </View>
+                            {/* Right col: experience */}
+                            <View style={PT.rightCol}>
+                                {work_experience?.filter(j => j.role?.trim() || j.company?.trim()).length > 0 ? (
+                                    <View>
+                                        <SecLabel>Work Experience</SecLabel>
+                                        {work_experience.filter(j => j.role?.trim() || j.company?.trim()).map((job, i) => (
+                                            <View key={i} style={PT.jobWrap} wrap={false}>
+                                                <View style={PT.jobTopRow}>
+                                                    <Text style={PT.jobRole}>{job.role || '—'}</Text>
+                                                    {job.period ? <Text style={PT.jobBadge}>{job.period}</Text> : null}
+                                                </View>
+                                                {job.company ? <Text style={[PT.jobCo, { color }]}>{job.company}</Text> : null}
+                                                {job.bullets?.filter(b => b.trim()).map((b, bi) => (
+                                                    <View key={bi} style={PT.bul}><Text style={PT.bulDot}>•</Text><Text style={PT.bulTxt}>{b}</Text></View>
+                                                ))}
+                                            </View>
+                                        ))}
+                                    </View>
+                                ) : null}
+                            </View>
                         </View>
-                    </View>
+                    ) : (
+                        /* One-column layout */
+                        <View>
+                            {skills?.filter(s => s.trim()).length > 0 ? (
+                                <View style={{ marginBottom: 16 }}>
+                                    <SecLabel>Key Skills</SecLabel>
+                                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 5 }}>
+                                        {skills.filter(s => s.trim()).map((sk, i) => (
+                                            <View key={i} style={{ backgroundColor: `${color}18`, borderRadius: 99, paddingVertical: 3, paddingHorizontal: 9, borderWidth: 1, borderColor: `${color}40` }}>
+                                                <Text style={{ fontSize: 8.5, color, fontFamily: 'Helvetica-Bold' }}>{sk}</Text>
+                                            </View>
+                                        ))}
+                                    </View>
+                                </View>
+                            ) : null}
+                            {work_experience?.filter(j => j.role?.trim() || j.company?.trim()).length > 0 ? (
+                                <View style={{ marginBottom: 16 }}>
+                                    <SecLabel>Work Experience</SecLabel>
+                                    {work_experience.filter(j => j.role?.trim() || j.company?.trim()).map((job, i) => (
+                                        <View key={i} style={{ marginBottom: 12 }} wrap={false}>
+                                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 1 }}>
+                                                <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 10.5 }}>{job.role || '—'}{job.company ? <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 9, color }}> · {job.company}</Text> : null}</Text>
+                                                {job.period ? <Text style={PT.jobBadge}>{job.period}</Text> : null}
+                                            </View>
+                                            {job.bullets?.filter(b => b.trim()).map((b, bi) => (
+                                                <View key={bi} style={PT.bul}><Text style={PT.bulDot}>•</Text><Text style={PT.bulTxt}>{b}</Text></View>
+                                            ))}
+                                        </View>
+                                    ))}
+                                </View>
+                            ) : null}
+                            {education?.filter(e => e.institution?.trim()).length > 0 ? (
+                                <View>
+                                    <SecLabel>Education</SecLabel>
+                                    {education.filter(e => e.institution?.trim()).map((edu, i) => (
+                                        <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+                                            <View>
+                                                <Text style={PT.eduInst}>{edu.institution}</Text>
+                                                {edu.degree ? <Text style={[PT.eduDeg, { color }]}>{edu.degree}</Text> : null}
+                                            </View>
+                                            {edu.period ? <Text style={PT.eduPeriod}>{edu.period}</Text> : null}
+                                        </View>
+                                    ))}
+                                </View>
+                            ) : null}
+                        </View>
+                    )}
                     <Text style={PT.footer}>References available upon request · Part-Time CV · Generated with GokulCV</Text>
                 </View>
             </Page>
         </Document>
     );
 };
-
 // ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// ATS PART-TIME PDF — v5, full-page, properly spaced
+// A4 = 595 x 842 pts. Target: fill 85-90% of page height.
+// ═══════════════════════════════════════════════════════════════
+const ATSS = StyleSheet.create({
+    page:      { fontFamily: 'Helvetica', fontSize: 11, paddingTop: 42, paddingBottom: 42, paddingLeft: 52, paddingRight: 52, color: '#111', backgroundColor: '#fff' },
+    // Header
+    name:      { fontFamily: 'Helvetica-Bold', fontSize: 20, marginBottom: 5 },
+    contact:   { fontFamily: 'Helvetica', fontSize: 10, color: '#444', marginBottom: 2 },
+    // Section
+    secGap:    { marginTop: 16 },
+    rule:      { borderBottomWidth: 1.5, borderBottomColor: '#111', marginBottom: 5 },
+    secTitle:  { fontFamily: 'Helvetica-Bold', fontSize: 10, color: '#111', marginBottom: 1 },
+    // Body text
+    bodyText:  { fontFamily: 'Helvetica', fontSize: 11, lineHeight: 1.6, marginTop: 5 },
+    kwText:    { fontFamily: 'Helvetica', fontSize: 10.5, lineHeight: 1.9, marginTop: 5 },
+    // Job block
+    jobBlock:  { marginTop: 10 },
+    jobRow:    { flexDirection: 'row' },
+    jobTitle:  { fontFamily: 'Helvetica-Bold', fontSize: 11.5, flex: 1 },
+    jobDate:   { fontFamily: 'Helvetica', fontSize: 10.5, color: '#444', textAlign: 'right', minWidth: 120 },
+    jobCo:     { fontFamily: 'Helvetica-Bold', fontSize: 10, color: '#555', marginTop: 2, marginBottom: 5 },
+    // Bullet
+    bulRow:    { flexDirection: 'row', marginBottom: 4, paddingLeft: 6 },
+    bulDash:   { fontFamily: 'Helvetica', fontSize: 11, width: 14, color: '#111' },
+    bulText:   { fontFamily: 'Helvetica', fontSize: 11, lineHeight: 1.55, flex: 1 },
+    // Education
+    eduBlock:  { marginTop: 10 },
+    eduRow:    { flexDirection: 'row' },
+    eduInst:   { fontFamily: 'Helvetica-Bold', fontSize: 11.5, flex: 1 },
+    eduDate:   { fontFamily: 'Helvetica', fontSize: 10.5, color: '#444', textAlign: 'right', minWidth: 90 },
+    eduDeg:    { fontFamily: 'Helvetica-Oblique', fontSize: 10.5, color: '#555', marginTop: 2 },
+    // Ref
+    refText:   { fontFamily: 'Helvetica', fontSize: 11, marginTop: 5 },
+});
+
+const SECTOR_KW = {
+    warehouse:   'Warehouse Operations | Stock Control | Manual Handling | Pick & Pack | RF Scanning | Health & Safety | Forklift Operation | Inventory Management | Despatch & Inbound | WMS Systems',
+    carehome:    'Person-Centred Care | Safeguarding Adults | Medication Administration | Manual Handling | Dignity & Respect | Care Planning | DBS Cleared | Dementia Awareness | Wellbeing Monitoring | Empathetic Communication',
+    freelance:   'Client Communication | Project Management | Time Management | Deadline Delivery | Invoicing | Remote Collaboration | Self-Motivation | Task Prioritisation',
+    retail:      'Customer Service | Cash Handling | Stock Replenishment | Visual Merchandising | Till Operation | Upselling | Loss Prevention | Product Knowledge',
+    kitchen:     'Food Hygiene Level 2 | HACCP | Allergen Awareness | Food Preparation | Kitchen Cleaning | Temperature Control | Mise en Place | Fast-Paced Service',
+    hospitality: 'Table Service | Bar Service | EPOS Till | Challenge 25 | Cellar Management | Front-of-House | Upselling | Licencing Awareness',
+};
+
+export const ATSPartTimePDF = ({ data, sector = 'warehouse' }) => {
+    const { personal, objective, skills, work_experience, education } = data;
+    const keywords = SECTOR_KW[sector] || SECTOR_KW.warehouse;
+
+    // Section header — uppercase enforced in JS since react-pdf ignores textTransform
+    const Sec = ({ title }) => (
+        <View style={ATSS.secGap}>
+            <View style={ATSS.rule} />
+            <Text style={ATSS.secTitle}>{title.toUpperCase()}</Text>
+        </View>
+    );
+
+    const validJobs = (work_experience || []).filter(j => j.role?.trim() || j.company?.trim());
+    const validEdus = (education || []).filter(e => e.institution?.trim());
+
+    return (
+        <Document title={(personal?.name || 'CV') + ' - ATS CV'} author={personal?.name || ''}>
+            <Page size="A4" style={ATSS.page}>
+
+                {/* ── NAME & CONTACT ── */}
+                <Text style={ATSS.name}>{personal?.name || 'Your Name'}</Text>
+                <Text style={ATSS.contact}>
+                    {[personal?.email, personal?.phone, personal?.location].filter(Boolean).join('   |   ')}
+                </Text>
+
+                {/* ── PERSONAL PROFILE ── */}
+                {objective?.trim() ? (
+                    <View>
+                        <Sec title="Personal Profile" />
+                        <Text style={ATSS.bodyText}>{objective.trim()}</Text>
+                    </View>
+                ) : null}
+
+                {/* ── KEY SKILLS — sector-matched ATS keywords ── */}
+                <View>
+                    <Sec title="Key Skills" />
+                    <Text style={ATSS.kwText}>{keywords}</Text>
+                </View>
+
+                {/* ── WORK EXPERIENCE ── */}
+                {validJobs.length > 0 ? (
+                    <View>
+                        <Sec title="Work Experience" />
+                        {validJobs.map((job, i) => (
+                            <View key={i} style={ATSS.jobBlock} wrap={false}>
+                                <View style={ATSS.jobRow}>
+                                    <Text style={ATSS.jobTitle}>{job.role || ''}</Text>
+                                    <Text style={ATSS.jobDate}>{job.period || ''}</Text>
+                                </View>
+                                {job.company ? <Text style={ATSS.jobCo}>{job.company}</Text> : null}
+                                {(job.bullets || []).filter(b => b?.trim()).map((b, bi) => (
+                                    <View key={bi} style={ATSS.bulRow}>
+                                        <Text style={ATSS.bulDash}>-</Text>
+                                        <Text style={ATSS.bulText}>{b.trim()}</Text>
+                                    </View>
+                                ))}
+                            </View>
+                        ))}
+                    </View>
+                ) : null}
+
+                {/* ── EDUCATION ── */}
+                {validEdus.length > 0 ? (
+                    <View>
+                        <Sec title="Education" />
+                        {validEdus.map((edu, i) => (
+                            <View key={i} style={ATSS.eduBlock} wrap={false}>
+                                <View style={ATSS.eduRow}>
+                                    <Text style={ATSS.eduInst}>{edu.institution}</Text>
+                                    <Text style={ATSS.eduDate}>{edu.period || ''}</Text>
+                                </View>
+                                {edu.degree ? <Text style={ATSS.eduDeg}>{edu.degree}</Text> : null}
+                            </View>
+                        ))}
+                    </View>
+                ) : null}
+
+                {/* ── REFERENCES — wrap=false keeps it on same page ── */}
+                <View wrap={false}>
+                    <Sec title="References" />
+                    <Text style={ATSS.refText}>Available upon request.</Text>
+                </View>
+
+            </Page>
+        </Document>
+    );
+};
+
 // UNIFIED EXPORT
 // ═══════════════════════════════════════════════════════════════
 export const generatePDF = async (resumeData, template = 'classic') => {

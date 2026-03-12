@@ -1,175 +1,271 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-
-export const MECHATRONICS_TAXONOMY = {
-  "CAD": ["SolidWorks", "AutoCAD", "CATIA", "Creo", "NX", "Fusion 360", "Inventor"],
-  "Controls": ["PLC", "SCADA", "PID", "Allen Bradley", "Siemens", "Beckhoff", "Automation", "HMI", "Ladder Logic"],
-  "Robotics": ["ROS", "Kinematics", "FANUC", "KUKA", "ABB", "UR", "Cobots", "Path Planning"],
-  "Programming": ["C++", "Python", "MATLAB", "Simulink", "C", "IEC 61131-3", "Embedded C"],
-  "Electronics": ["PCB Design", "Altium", "Eagle", "KiCad", "Microcontrollers", "Arduino", "Raspberry Pi", "FPGA", "VHDL", "Verilog"],
-  "Systems Engineering": ["FMEA", "SysML", "Requirements Engineering", "MBSE", "Validation"],
-  "Sensors & Actuators": ["Lidar", "Encoders", "Servos", "Stepper Motors", "Pneumatics", "Hydraulics"]
-};
-
-export const calculateImpactScore = (resumeText) => {
-  const metricsRegex = /\b(\d+(?:\.\d+)?(?:%|\$|mm|cm|m|kg|g|ms|s|hours|hrs|mins|k|M|B)?)\b/gi;
-  const actionVerbs = /\b(Led|Developed|Designed|Engineered|Reduced|Increased|Optimized|Implemented|Spearheaded|Managed|Automated|Resolved|Built|Created|Executed|Delivered)\b/gi;
-
-  const metricsCount = (resumeText.match(metricsRegex) || []).length;
-  const verbsCount = (resumeText.match(actionVerbs) || []).length;
-
-  // Max out impact points at 20
-  const impactScore = Math.min(20, (metricsCount * 1.5) + (verbsCount * 0.5));
-  return Math.round(impactScore);
-};
-
 /**
- * Professional ATS Algorithm Prompt Engineering
- * Mimics industry-standard CV tailoring logic.
+ * ai.js — GokulCV AI Layer v2.0
+ * Primary:  Groq (llama-4-scout) — fast, free, reliable
+ * Fallback: OpenRouter (llama-3.3-70b free) — automatic backup
+ *
+ * CV Writing Algorithm baked in:
+ * - Strong UK action verbs, quantified achievements
+ * - No buzzwords, no first-person, no AI clichés
+ * - ATS keyword optimisation + JD tailoring
+ * - Sector-specific language, seniority mirroring
+ * - Natural human tone, short punchy sentences
  */
-const SYSTEM_PROMPT = `
-You are a world-class Executive Career Strategist and Expert Copywriter specializing in Engineering.
-Your mission is to synthesize a BRAND NEW, highly tailored CV that achieves two competing goals simultaneously:
-1. ATS Optimization: Naturally integrate core technical keywords from the Job Description.
-2. Compelling Human Narrative: Read like a confident, professional human executive. ZERO robotic fluff.
 
-CRITICAL RULES:
-- GROUNDING: You CANNOT invent new jobs, degrees, companies, or metrics. You can only reframe, emphasize, and highlight the existing facts to match the JD.
-- PERSONA: Crisp, authoritative, metric-driven engineering professional. Do not use common AI cliches (e.g., "Spearheaded", "Dynamic", "Passionate about", "Delve", "Embark").
-- TOTAL REWRITE: Rewrite the Profile, Experience bullets, and Project descriptions to align with the JD's core needs, but keep the core truth intact.
+// ─────────────────────────────────────────────────────────────
+// MECHATRONICS TAXONOMY (ATS scoring)
+// ─────────────────────────────────────────────────────────────
+export const MECHATRONICS_TAXONOMY = {
+    'CAD':                ['SolidWorks', 'AutoCAD', 'CATIA', 'Creo', 'NX', 'Fusion 360', 'Inventor'],
+    'Controls':           ['PLC', 'SCADA', 'PID', 'Allen Bradley', 'Siemens', 'Beckhoff', 'HMI', 'Ladder Logic'],
+    'Robotics':           ['ROS', 'Kinematics', 'FANUC', 'KUKA', 'ABB', 'UR', 'Cobots', 'Path Planning'],
+    'Programming':        ['C++', 'Python', 'MATLAB', 'Simulink', 'C', 'IEC 61131-3', 'Embedded C'],
+    'Electronics':        ['PCB Design', 'Altium', 'Eagle', 'KiCad', 'Microcontrollers', 'Arduino', 'Raspberry Pi', 'FPGA'],
+    'Systems Engineering':['FMEA', 'SysML', 'Requirements Engineering', 'MBSE', 'Validation'],
+    'Sensors & Actuators':['Lidar', 'Encoders', 'Servos', 'Stepper Motors', 'Pneumatics', 'Hydraulics'],
+};
 
-OUTPUT SPECIFICATIONS (JSON ONLY):
-Return a complete JSON object matching the exact structure below. All text fields should contain your newly synthesized, human-sounding narrative.
+// ─────────────────────────────────────────────────────────────
+// IMPACT SCORE CALCULATOR
+// ─────────────────────────────────────────────────────────────
+export const calculateImpactScore = (resumeText) => {
+    const metricsRegex = /\b(\d+(?:\.\d+)?(?:%|\$|£|mm|cm|m|kg|g|ms|s|hours|hrs|mins|k|M|B)?)\b/gi;
+    const actionVerbs  = /\b(Led|Delivered|Achieved|Drove|Developed|Designed|Engineered|Reduced|Increased|Optimised|Implemented|Managed|Automated|Resolved|Built|Executed|Deployed|Streamlined|Improved|Launched|Negotiated|Trained|Mentored|Secured|Generated)\b/gi;
+    const metricsCount = (resumeText.match(metricsRegex) || []).length;
+    const verbsCount   = (resumeText.match(actionVerbs)  || []).length;
+    return Math.min(20, Math.round((metricsCount * 1.5) + (verbsCount * 0.5)));
+};
 
-{
-  "semanticScore": 85,
-  "foundSkills": ["SolidWorks", "Python"],
-  "missingCrucialSkills": ["PLC Programming"],
-  "impactCritique": "Bullet 2 lacks quantifiable metrics.",
-  "contextualSuggestions": [
-    {
-      "target": "Experience Bullet 3",
-      "suggestion": "Rewrite to include Agile Methodology: 'Led cross-functional Agile team to...'"
-    }
-  ],
-  "personal": {
-    "name": "string", "location": "string", "phone": "string", "email": "string", "linkedin": "string"
-  },
-  "personal_profile": "A deeply compelling, human-sounding mission statement. No AI cliches.",
-  "education": [
-    { "degree": "string", "institution": "string", "period": "string", "bullets": ["string"] }
-  ],
-  "professional_qualifications": [
-    { "category": "string", "skills": "string" }
-  ],
-  "work_experience": [
-    {
-      "role": "string", "company": "string", "period": "string",
-      "context": "Short contextual intro",
-      "achievements": [ "High-impact, metric-driven, human-sounding bullet 1", "Bullet 2" ]
-    }
-  ],
-  "extra_curricular": [
-    { "role": "string", "organization": "string", "period": "string", "bullets": ["string"] }
-  ]
-}
+// ─────────────────────────────────────────────────────────────
+// CV WRITING ALGORITHM — the "brain" injected into every call
+// ─────────────────────────────────────────────────────────────
+const CV_WRITING_ALGORITHM = `
+You are a world-class UK CV writer. Every word must pass ALL of these rules:
+
+TONE & VOICE:
+- Natural human tone — confident professional, not robotic
+- Third-person implied: never use "I", "my", "me" anywhere
+- Short punchy sentences — aim for under 20 words per bullet
+- Never start two consecutive bullets with the same verb
+- Match seniority: junior = eager and developing, senior = authoritative and strategic
+
+REQUIRED ACTION VERBS (start every bullet with one):
+Delivered, Led, Achieved, Drove, Built, Deployed, Streamlined, Improved, Reduced, Increased,
+Managed, Developed, Designed, Executed, Launched, Resolved, Implemented, Negotiated,
+Trained, Mentored, Secured, Generated, Optimised, Automated
+
+QUANTIFICATION RULES:
+- Every bullet must contain at least one number, %, £ value, or time metric
+- Use realistic estimates with qualifiers if no metric exists in source data
+- Format: % for percentages, £ for money (UK), plain numbers for counts
+
+BANNED WORDS — never use these:
+passionate about, synergy, leverage, utilise, dynamic, proactive, go-getter, results-driven,
+detail-oriented, team player, hard worker, motivated, dedicated, delve, embark,
+stakeholder engagement, value-add, bandwidth, paradigm, holistic, thought leader,
+innovative thinker, best-in-class, cutting-edge, spearheaded, world-class
+
+UK ENGLISH:
+- Spelling: optimised, organised, recognised, analyse, colour, centre
+- Currency: £ not $
+- Dates: "Jan 2024 – Present" format
+
+PERSONAL STATEMENT RULES:
+- Max 60 words, 3 sentences maximum
+- Structure: [Who you are] + [What you bring] + [Value to this employer]
+- End with a clear value proposition
+- No first-person, no buzzwords, specific and compelling
+
+ATS OPTIMISATION:
+- When JD provided: weave in exact JD keywords naturally — no keyword stuffing
+- Match the JD terminology exactly
+- Include sector-specific technical terms
+
+SECTOR LANGUAGE:
+- Warehouse: throughput, SLA, pick accuracy, WMS, despatch, inbound/outbound
+- Care: person-centred, dignity-led, safeguarding, care plans, wellbeing
+- Hospitality: covers, upselling, front-of-house, licencing, service periods
+- Retail: footfall, conversion, KPIs, visual merchandising, till reconciliation
+- Kitchen: HACCP, allergens, mise en place, covers, food hygiene
+- Freelance: deliverables, client brief, scope, turnaround, retainer
+
+CRITICAL: Return ONLY raw JSON. No markdown. No code blocks. No explanation.
 `;
 
-export const tailorResume = async (resumeData, jobDescription) => {
-  // Guard: check API key is present before making the call
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  if (!apiKey || apiKey.trim() === '') {
-    throw new Error("VITE_GEMINI_API_KEY is missing from your .env file. Add it and restart the dev server.");
-  }
+// ─────────────────────────────────────────────────────────────
+// GROQ CLIENT (primary)
+// ─────────────────────────────────────────────────────────────
+const callGroq = async (messages, systemPrompt) => {
+    const apiKey = import.meta.env.VITE_GROQ_API_KEY;
+    if (!apiKey) throw new Error('GROQ_KEY_MISSING');
 
-  try {
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash",
-      systemInstruction: SYSTEM_PROMPT,
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+            model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+            messages: [{ role: 'system', content: systemPrompt }, ...messages],
+            temperature: 0.4,
+            max_tokens: 4096,
+            response_format: { type: 'json_object' },
+        }),
     });
 
-    const prompt = `
-INPUT MASTER RESUME DATA:
-${JSON.stringify(resumeData)}
-
-TARGET JOB DESCRIPTION:
-${jobDescription.substring(0, 8000)}
-
-Perform a Total Synthesis and return the specific JSON structure requested. DO NOT wrap the output in markdown code blocks. Just return the raw JSON object. Never invent facts.
-        `;
-
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-
-    // Sanitize response: reliably extract the JSON object between the first '{' and last '}'
-    const startIndex = text.indexOf('{');
-    const endIndex = text.lastIndexOf('}');
-
-    if (startIndex === -1 || endIndex === -1) {
-      throw new Error("No valid JSON structure found in AI response");
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        if (res.status === 429) throw new Error('RATE_LIMIT');
+        if (res.status === 401) throw new Error('GROQ_KEY_INVALID');
+        throw new Error(`GROQ_ERROR_${res.status}: ${err?.error?.message || 'Unknown'}`);
     }
 
-    const jsonString = text.substring(startIndex, endIndex + 1);
-    const parsedJSON = JSON.parse(jsonString);
+    const data = await res.json();
+    return data.choices[0].message.content;
+};
 
-    // Proprietary Math: Compute Impact & Ontology ATS Score
-    const resumeTextStr = JSON.stringify(resumeData);
-    const impactScore = calculateImpactScore(resumeTextStr);
+// ─────────────────────────────────────────────────────────────
+// OPENROUTER CLIENT (fallback)
+// ─────────────────────────────────────────────────────────────
+const callOpenRouter = async (messages, systemPrompt) => {
+    const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+    if (!apiKey) throw new Error('OPENROUTER_KEY_MISSING');
 
-    let ontologyMatches = 0;
-    let requiredCategories = 0;
-    const jdLower = jobDescription.toLowerCase();
-    const resumeLower = resumeTextStr.toLowerCase();
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
+            'HTTP-Referer': 'https://gokulcv.app',
+            'X-Title': 'GokulCV',
+        },
+        body: JSON.stringify({
+            model: 'meta-llama/llama-3.3-70b-instruct:free',
+            messages: [{ role: 'system', content: systemPrompt }, ...messages],
+            temperature: 0.4,
+            max_tokens: 4096,
+        }),
+    });
 
-    for (const [category, synonyms] of Object.entries(MECHATRONICS_TAXONOMY)) {
-      const isCategoryInJD = synonyms.some(syn => jdLower.includes(syn.toLowerCase())) || jdLower.includes(category.toLowerCase());
-      if (isCategoryInJD) {
-        requiredCategories++;
-        const isCategoryInResume = synonyms.some(syn => resumeLower.includes(syn.toLowerCase())) || resumeLower.includes(category.toLowerCase());
-        if (isCategoryInResume) {
-          ontologyMatches++;
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(`OPENROUTER_ERROR_${res.status}: ${err?.error?.message || 'Unknown'}`);
+    }
+
+    const data = await res.json();
+    return data.choices[0].message.content;
+};
+
+// ─────────────────────────────────────────────────────────────
+// UNIFIED AI CALL — Groq first, OpenRouter fallback
+// ─────────────────────────────────────────────────────────────
+const callAI = async (messages, systemPrompt) => {
+    try {
+        const result = await callGroq(messages, systemPrompt);
+        console.log('[GokulCV AI] Provider: Groq ✓');
+        return result;
+    } catch (err) {
+        const shouldFallback = ['RATE_LIMIT', 'GROQ_KEY_MISSING'].includes(err.message) || err.message.startsWith('GROQ_ERROR');
+        if (!shouldFallback) throw err;
+        console.warn('[GokulCV AI] Groq failed:', err.message, '→ trying OpenRouter...');
+    }
+
+    try {
+        const result = await callOpenRouter(messages, systemPrompt);
+        console.log('[GokulCV AI] Provider: OpenRouter fallback ✓');
+        return result;
+    } catch (err) {
+        console.error('[GokulCV AI] Both providers failed:', err.message);
+        throw new Error('Both AI providers are unavailable. Check your API keys in .env and try again.');
+    }
+};
+
+// ─────────────────────────────────────────────────────────────
+// JSON PARSER
+// ─────────────────────────────────────────────────────────────
+const parseJSON = (text) => {
+    const clean = text.replace(/```json|```/g, '').trim();
+    const start = clean.indexOf('{');
+    const end   = clean.lastIndexOf('}');
+    if (start === -1) throw new Error('AI returned no JSON. Please try again.');
+    return JSON.parse(clean.substring(start, end + 1));
+};
+
+// ─────────────────────────────────────────────────────────────
+// MAIN: tailorResume
+// ─────────────────────────────────────────────────────────────
+export const tailorResume = async (resumeData, jobDescription) => {
+    const systemPrompt = CV_WRITING_ALGORITHM + `
+
+Return this exact JSON structure — no other text:
+{
+  "semanticScore": 85,
+  "foundSkills": ["skill1"],
+  "missingCrucialSkills": ["skill2"],
+  "impactCritique": "Brief critique",
+  "contextualSuggestions": [{ "target": "Bullet 3", "suggestion": "..." }],
+  "personal": { "name": "", "location": "", "phone": "", "email": "", "linkedin": "" },
+  "personal_profile": "3-sentence profile per algorithm rules.",
+  "education": [{ "degree": "", "institution": "", "period": "", "bullets": [""] }],
+  "professional_qualifications": [{ "category": "", "skills": "" }],
+  "work_experience": [{
+    "role": "", "company": "", "period": "",
+    "context": "One-line role context",
+    "achievements": ["Verb-led bullet with metric", "Another bullet"]
+  }],
+  "extra_curricular": [{ "role": "", "organization": "", "period": "", "bullets": [""] }]
+}`;
+
+    const userMessage = `MASTER CV DATA:\n${JSON.stringify(resumeData)}\n\nTARGET JOB DESCRIPTION:\n${jobDescription.substring(0, 6000)}\n\nApply the CV Writing Algorithm fully. Return raw JSON only.`;
+
+    try {
+        const raw    = await callAI([{ role: 'user', content: userMessage }], systemPrompt);
+        const parsed = parseJSON(raw);
+
+        // ── ATS Score ──
+        const resumeStr   = JSON.stringify(resumeData);
+        const impactScore = calculateImpactScore(resumeStr);
+        const jdLower     = jobDescription.toLowerCase();
+        const resLower    = resumeStr.toLowerCase();
+
+        let ontologyMatches = 0, requiredCategories = 0;
+        for (const [cat, synonyms] of Object.entries(MECHATRONICS_TAXONOMY)) {
+            const inJD = synonyms.some(s => jdLower.includes(s.toLowerCase())) || jdLower.includes(cat.toLowerCase());
+            if (inJD) {
+                requiredCategories++;
+                if (synonyms.some(s => resLower.includes(s.toLowerCase())) || resLower.includes(cat.toLowerCase())) {
+                    ontologyMatches++;
+                }
+            }
         }
-      }
+
+        const ontologyScore    = requiredCategories > 0 ? Math.round((ontologyMatches / requiredCategories) * 40) : 40;
+        const llmSemantic      = parsed.semanticScore || 80;
+        const finalMatchScore  = Math.min(100, Math.round(llmSemantic * 0.4) + ontologyScore + impactScore);
+
+        parsed.match_score      = finalMatchScore;
+        parsed.missing_keywords = parsed.missingCrucialSkills || [];
+        parsed.extra_metrics    = {
+            semanticScore:         llmSemantic,
+            impactScore,
+            ontologyScore,
+            impactCritique:        parsed.impactCritique,
+            contextualSuggestions: parsed.contextualSuggestions || [],
+        };
+
+        return parsed;
+
+    } catch (error) {
+        console.error('[GokulCV] tailorResume error:', error);
+        if (error.message?.includes('KEY_INVALID') || error.message?.includes('API key')) {
+            throw new Error('Invalid API key. Check VITE_GROQ_API_KEY in your .env file.');
+        }
+        if (error.message?.includes('RATE_LIMIT') || error.message?.includes('429')) {
+            throw new Error('Rate limit hit. Wait a few seconds and try again.');
+        }
+        if (error.message?.includes('JSON')) {
+            throw new Error('AI returned malformed data. Try again — usually transient.');
+        }
+        throw error;
     }
-
-    // Base match score from ontology (0 to 40 points)
-    const ontologyScore = requiredCategories > 0 ? Math.round((ontologyMatches / requiredCategories) * 40) : 40;
-
-    // Semantic Score from LLM (0 to 100) mapped to 40 points
-    const llmSemanticScore = parsedJSON.semanticScore || 80;
-    const semanticContribution = Math.round(llmSemanticScore * 0.4);
-
-    // Final Next-Gen ATS Score out of 100
-    const finalMatchScore = Math.min(100, semanticContribution + ontologyScore + impactScore);
-
-    // Inject the final algorithm metrics backward into the parsedJSON
-    // App.jsx will automatically collect these via destructuring
-    parsedJSON.match_score = finalMatchScore;
-    parsedJSON.missing_keywords = parsedJSON.missingCrucialSkills || [];
-
-    parsedJSON.extra_metrics = {
-      semanticScore: llmSemanticScore,
-      impactScore,
-      ontologyScore,
-      impactCritique: parsedJSON.impactCritique,
-      contextualSuggestions: parsedJSON.contextualSuggestions || []
-    };
-
-    return parsedJSON;
-  } catch (error) {
-    console.error("Gemini AI Error:", error);
-    // Surface actionable error messages to the UI
-    if (error.message?.includes('API_KEY')) {
-      throw new Error("Invalid API key. Check VITE_GEMINI_API_KEY in your .env file.");
-    }
-    if (error.message?.includes('quota') || error.message?.includes('429')) {
-      throw new Error("API quota exceeded. Wait a moment and try again.");
-    }
-    if (error.message?.includes('JSON')) {
-      throw new Error("AI returned malformed data. Try again — this is usually transient.");
-    }
-    throw error;
-  }
 };
