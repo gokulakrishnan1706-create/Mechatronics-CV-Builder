@@ -1,6 +1,6 @@
 /**
  * ai.js — GokulCV AI Layer v2.0
- * Primary:  Groq (llama-4-scout) — fast, free, reliable
+ * Primary:  Groq (gpt-oss-120b) — fast, free, reliable
  * Fallback: OpenRouter (llama-3.3-70b free) — automatic backup
  *
  * CV Writing Algorithm baked in:
