@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Sparkles, Target, Zap, Layout, FileText, CheckCircle, ChevronDown, Star, Shield, Cpu, RefreshCw, XCircle, Users, Github, Linkedin } from 'lucide-react';
+import UserMenu from './UserMenu';
 
 const fadeUp = {
     hidden: { opacity: 0, y: 15 },
@@ -12,7 +13,7 @@ const staggerContainer = {
     visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
 };
 
-export default function Homepage({ onStartBuilding, onStartSmartCV, onStartPartTime }) {
+export default function Homepage({ onStartBuilding, onStartSmartCV, onStartPartTime, user, onSignIn, onSaveToCloud, onOpenSaved, onSignOut, saveStatus }) {
     const heroRef = useRef(null);
     const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
     const yHero = useTransform(scrollYProgress, [0, 1], [0, 100]);
@@ -72,10 +73,10 @@ export default function Homepage({ onStartBuilding, onStartSmartCV, onStartPartT
                 </div>
                 <div className="flex items-center gap-3">
                     <button
-                        onClick={onStartSmartCV}
+                        onClick={() => window.location.href = '/ats'}
                         className="text-sm font-semibold tracking-wide text-brand-primary bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-5 py-2.5 rounded-full transition-all active:scale-95 shadow-sm hidden sm:flex items-center gap-2"
                     >
-                        <Target className="w-4 h-4" /> Smart Match UI
+                        🎯 ATS Score Checker
                     </button>
                     <button
                         onClick={onStartBuilding}
@@ -83,6 +84,33 @@ export default function Homepage({ onStartBuilding, onStartSmartCV, onStartPartT
                     >
                         Builder Access <ArrowRight className="w-4 h-4" />
                     </button>
+
+                    {/* Auth: inline in navbar */}
+                    {saveStatus === 'saved' && (
+                        <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full">
+                            ✓ Saved
+                        </span>
+                    )}
+                    {saveStatus === 'saving' && (
+                        <span className="text-[11px] font-bold text-brand-primary bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-full animate-pulse">
+                            Saving…
+                        </span>
+                    )}
+                    {user ? (
+                        <UserMenu
+                            user={user}
+                            onSave={onSaveToCloud}
+                            onOpenSaved={onOpenSaved}
+                            onSignOut={onSignOut}
+                        />
+                    ) : (
+                        <button
+                            onClick={onSignIn}
+                            className="text-sm font-semibold tracking-wide text-brand-text bg-white hover:bg-slate-50 border border-slate-200 px-5 py-2.5 rounded-full transition-all active:scale-95 shadow-sm flex items-center gap-2"
+                        >
+                            Sign In
+                        </button>
+                    )}
                 </div>
             </nav>
 
@@ -135,11 +163,10 @@ export default function Homepage({ onStartBuilding, onStartSmartCV, onStartPartT
                             <ArrowRight className="w-5 h-5 ml-2" />
                         </button>
                         <button
-                            onClick={onStartSmartCV}
+                            onClick={() => window.location.href = '/builder'}
                             className="bg-white border text-indigo-700 border-indigo-200 hover:bg-indigo-50 font-medium rounded-full px-8 py-3.5 flex items-center transition-all shadow-md active:scale-95 text-lg"
                         >
-                            <Target className="w-5 h-5 mr-2" />
-                            Live Gamified UI
+                            🚀 Build Part-Time CV
                         </button>
                     </motion.div>
                 </motion.div>

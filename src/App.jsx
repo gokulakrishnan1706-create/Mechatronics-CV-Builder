@@ -9,6 +9,7 @@ import PartTimeCVGenerator from './components/PartTimeCVGenerator';
 import AuthModal from './components/AuthModal';
 import UserMenu from './components/UserMenu';
 import SavedCVs from './components/SavedCVs';
+import ATSScoreChecker from './components/ATSScoreChecker';
 import initialResumeData from './data/resumeData.json';
 import { supabase, saveCV } from './services/supabase';
 
@@ -177,10 +178,18 @@ function App() {
     window.scrollTo(0, 0);
   };
 
+  // ─── ATS route ───
+  const currentPath = window.location.pathname;
+  const currentHash = window.location.hash;
+  if (currentPath === '/ats' || currentHash === '#ats') {
+    return <ATSScoreChecker />;
+  }
+
   return (
     <div className="min-h-screen bg-aura-surface font-sans text-aura-dark selection:bg-aura-primary/20 selection:text-aura-primary relative">
 
-      {/* ═══ TOP-RIGHT AUTH BAR ═══ */}
+      {/* ═══ TOP-RIGHT AUTH BAR — hidden on homepage (navbar handles it) ═══ */}
+      {view !== 'home' && (
       <div className="fixed top-4 right-4 z-[100] flex items-center gap-2">
         {saveStatus === 'saved' && (
           <motion.span
@@ -219,6 +228,7 @@ function App() {
           </button>
         )}
       </div>
+      )}
 
       <AnimatePresence mode="wait">
         {view === 'home' ? (
@@ -227,6 +237,12 @@ function App() {
               onStartBuilding={goToBuilder}
               onStartSmartCV={() => setView('smartcv')}
               onStartPartTime={() => setShowPartTime(true)}
+              user={user}
+              onSignIn={() => setShowAuth(true)}
+              onSaveToCloud={handleSaveToCloud}
+              onOpenSaved={() => setShowSaved(true)}
+              onSignOut={() => { setUser(null); setActiveCvId(null); }}
+              saveStatus={saveStatus}
             />
           </motion.div>
         ) : view === 'templatepicker' ? (
