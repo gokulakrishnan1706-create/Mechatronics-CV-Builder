@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { X, Loader2, Trash2, FileText, Clock, AlertTriangle, FolderOpen } from 'lucide-react';
-import { fetchSavedCVs, loadCV, deleteCV } from '../services/supabase';
+import { getSavedCVs, deleteCV } from '../services/supabase';
 
 const SavedCVs = ({ onClose, onLoad }) => {
     const [cvs, setCvs] = useState([]);
@@ -17,7 +17,7 @@ const SavedCVs = ({ onClose, onLoad }) => {
         setLoading(true);
         setError('');
         try {
-            const data = await fetchSavedCVs();
+            const data = await getSavedCVs();
             setCvs(data || []);
         } catch (err) {
             setError(err.message || 'Failed to fetch saved CVs');
@@ -28,8 +28,9 @@ const SavedCVs = ({ onClose, onLoad }) => {
 
     const handleLoad = async (id) => {
         try {
-            const cv = await loadCV(id);
-            onLoad(cv.resume_data, cv.id, cv.title);
+            const cv = cvs.find(c => c.id === id);
+            if (!cv) throw new Error('CV not found');
+            onLoad(cv.cv_data || cv.resume_data, cv.id, cv.title);
             onClose();
         } catch (err) {
             setError('Failed to load CV: ' + err.message);
