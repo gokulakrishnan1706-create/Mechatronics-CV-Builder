@@ -9,6 +9,7 @@ import {
     Wine, RotateCcw, LayoutTemplate, Save, ThumbsUp, ThumbsDown,
     ChevronDown, ChevronUp, Upload, FileText, Target, Zap
 } from 'lucide-react';
+import { saveCVVersion, saveCV, getUser } from '../services/supabase';
 
 // ─────────────────────────────────────────────
 // CV UPLOAD + EXTRACT PANEL
@@ -337,6 +338,11 @@ const PartTimeCVGenerator = ({ onClose }) => {
     const [polishLog, setPolishLog] = useState('');
     const [savedToast, setSavedToast] = useState(false);
     const [showUpload, setShowUpload] = useState(false);
+    const [atsFix, setAtsFix] = useState(null);
+    const [currentUser, setCurrentUser] = useState(null);
+    const [savedCvId, setSavedCvId] = useState(null);
+    const [saveStatus, setSaveStatus] = useState('idle');
+    const [atsRescanScore, setAtsRescanScore] = useState(null);
     const [jobOrder, setJobOrder] = useState(() => data.work_experience.map((_, i) => i));
     const cfg = SECTOR_CONFIGS[sector];
     const CfgIcon = cfg.icon;
@@ -357,6 +363,24 @@ const PartTimeCVGenerator = ({ onClose }) => {
     useEffect(() => {
         try { localStorage.setItem(STORAGE_KEY + '_layout', layout); } catch {}
     }, [layout]);
+
+    // ── ATS Fix Mode: read context from sessionStorage ──
+    useEffect(() => {
+        const raw = sessionStorage.getItem('gokulcv_ats_fix_context');
+        if (raw) {
+            try {
+                const ctx = JSON.parse(raw);
+                if (Date.now() - ctx.timestamp < 30 * 60 * 1000) {
+                    setAtsFix(ctx);
+                    if (ctx.sector) setSector(ctx.sector);
+                }
+                sessionStorage.removeItem('gokulcv_ats_fix_context');
+            } catch (e) {
+                console.error('Failed to parse ATS context:', e);
+            }
+        }
+        getUser().then(setCurrentUser);
+    }, []);
 
     // ── Deep update helper ──
     const updateField = useCallback((path, value) => {
@@ -393,6 +417,12 @@ const PartTimeCVGenerator = ({ onClose }) => {
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); setSavedToast(true); setTimeout(() => setSavedToast(false), 2000); } catch {}
     };
 
+    // ── ATS Fix: build instructions for AI prompt ──
+    const buildAtsFixInstructions = () => {
+        if (!atsFix || !atsFix.missingKeywords.length) return '';
+        return `\n\nCRITICAL ATS FIX INSTRUCTIONS:\nThis CV is being rewritten to fix specific ATS failures. The following keywords were MISSING from the previous version and MUST appear naturally in the output:\n${atsFix.missingKeywords.join(', ')}\n\nRules for keyword integration:\n- Weave them into bullet points naturally — do NOT keyword-stuff\n- Only include a keyword where the candidate's experience genuinely supports it\n- Use the exact keyword phrasing\n- The goal is to go from ${atsFix.previousScore}/100 to 85+/100 on an ATS scan`;
+    };
+
     // ── AI Polish (per-section with diff) — Groq primary, OpenRouter fallback ──
     const handleAIPolish = async (target) => {
         const groqKey = import.meta.env.VITE_GROQ_API_KEY;
@@ -411,7 +441,7 @@ STRICT RULES — every violation will cause rejection:
 - BANNED WORDS — never use: dynamic, exceptional, proactive, passionate, synergy, leverage, spearheaded, collaborated, demonstrated, hardworking, dedicated, motivated, team player, reliable
 - No first-person (no I, my, me)
 - No vague phrases like "ensuring smooth operations" or "attention to detail"
-- Be specific to ${cfg.label} sector language`;
+- Be specific to ${cfg.label} sector language${buildAtsFixInstructions()}`;
 
         try {
             let prompt, original;
@@ -486,7 +516,7 @@ Original bullets: ${JSON.stringify(original)}`;
         }
     };
 
-    const acceptDiff = () => {
+    const acceptDiff = async () => {
         if (!pendingDiff) return;
         const { target, proposed } = pendingDiff;
         if (target === 'objective') {
@@ -499,6 +529,25 @@ Original bullets: ${JSON.stringify(original)}`;
             });
         }
         setPendingDiff(null);
+
+        // Save version to Supabase if logged in
+        if (currentUser) {
+            try {
+                const currentData = JSON.parse(JSON.stringify(data));
+                if (target === 'objective') currentData.objective = proposed;
+                else currentData.work_experience[target].bullets = proposed;
+                await saveCVVersion({
+                    savedCvId: savedCvId,
+                    cvData: currentData,
+                    sector: sector,
+                    atsScore: atsFix?.previousScore || null,
+                    atsJobType: atsFix?.jobType || null,
+                    notes: atsFix ? `ATS Fix Mode — was ${atsFix.previousScore}/100` : null,
+                });
+            } catch (e) {
+                console.error('Version save failed silently:', e);
+            }
+        }
     };
 
     const rejectDiff = () => setPendingDiff(null);
@@ -616,6 +665,35 @@ Original bullets: ${JSON.stringify(original)}`;
                         <RotateCcw className="w-4 h-4" />
                     </button>
 
+                    {/* Save CV to Supabase */}
+                    {currentUser && data?.personal?.name && (
+                        <button
+                            onClick={async () => {
+                                setSaveStatus('saving');
+                                try {
+                                    const saved = await saveCV({
+                                        title: `${data.personal.name || 'My CV'} — ${sector} — ${new Date().toLocaleDateString('en-GB')}`,
+                                        sector,
+                                        cvData: data,
+                                        atsScore: atsRescanScore || atsFix?.previousScore || null,
+                                        atsJobType: atsFix?.jobType || null,
+                                        atsSector: atsFix?.sector || sector,
+                                    });
+                                    setSavedCvId(saved.id);
+                                    setSaveStatus('saved');
+                                    setTimeout(() => setSaveStatus('idle'), 3000);
+                                } catch (e) {
+                                    console.error('Save failed:', e);
+                                    setSaveStatus('error');
+                                }
+                            }}
+                            disabled={saveStatus === 'saving'}
+                            className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm text-white transition-all ${saveStatus === 'saved' ? 'bg-emerald-500' : 'bg-slate-800 hover:bg-slate-700'}`}
+                        >
+                            {saveStatus === 'saving' ? '💾 Saving...' : saveStatus === 'saved' ? '✓ Saved!' : '💾 Save CV'}
+                        </button>
+                    )}
+
                     {/* Download */}
                     <button onClick={handleDownload} disabled={isDownloading}
                         className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm text-white transition-all ${downloadSuccess ? 'bg-emerald-500' : 'bg-brand-primary hover:bg-blue-700'}`}>
@@ -628,6 +706,55 @@ Original bullets: ${JSON.stringify(original)}`;
             <div className="flex-1 flex overflow-hidden">
                 {/* ══ LEFT: FORM ══ */}
                 <div className="w-[460px] shrink-0 bg-white border-r border-slate-200 flex flex-col overflow-hidden">
+
+                    {/* ATS Fix Mode Banner */}
+                    {atsFix && (
+                        <div style={{
+                            background: 'linear-gradient(135deg, #1e3a5f 0%, #1e1b4b 100%)',
+                            borderRadius: 0, padding: '20px 24px',
+                            borderBottom: '1px solid #3b82f6',
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+                                <div style={{ fontSize: 28, flexShrink: 0 }}>🎯</div>
+                                <div style={{ flex: 1 }}>
+                                    <div style={{
+                                        fontSize: 14, fontWeight: 800, color: '#93c5fd',
+                                        letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase'
+                                    }}>
+                                        ATS Fix Mode Active
+                                    </div>
+                                    <div style={{ fontSize: 14, color: '#e2e8f0', marginBottom: 12, lineHeight: 1.5 }}>
+                                        Your previous ATS score was{' '}
+                                        <strong style={{ color: '#fbbf24' }}>{atsFix.previousScore}/100</strong>.
+                                        The AI will target these missing keywords in your rewrite:
+                                    </div>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+                                        {atsFix.missingKeywords.map(kw => (
+                                            <span key={kw} style={{
+                                                background: '#1d4ed8', color: '#bfdbfe',
+                                                fontSize: 12, fontWeight: 700,
+                                                padding: '3px 10px', borderRadius: 20,
+                                                border: '1px solid #3b82f6'
+                                            }}>
+                                                + {kw}
+                                            </span>
+                                        ))}
+                                    </div>
+                                    <div style={{ fontSize: 12, color: '#94a3b8' }}>
+                                        After generating, go back to the ATS Checker to see your new score.
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setAtsFix(null)}
+                                    style={{
+                                        background: 'none', border: 'none', color: '#64748b',
+                                        cursor: 'pointer', fontSize: 18, padding: 4, flexShrink: 0
+                                    }}
+                                    title="Dismiss ATS Fix Mode"
+                                >✕</button>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Sector selector */}
                     <div className="px-4 pt-4 pb-3 border-b border-slate-100 bg-slate-50 shrink-0">
