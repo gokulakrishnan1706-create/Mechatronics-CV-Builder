@@ -91,7 +91,7 @@ function BreakdownBar({ label, score, maxScore }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
         <span style={{ fontSize: 13, color: '#374151', fontWeight: 500 }}>{label}</span>
         <span style={{ fontSize: 13, fontWeight: 700, color }}>
-          {score}/{maxScore}
+          {Math.min(score, maxScore)}/{maxScore}
         </span>
       </div>
       <div style={{
