@@ -83,7 +83,7 @@ function ScoreCircle({ score, rating, animate }) {
 
 // ── Score breakdown bar ──
 function BreakdownBar({ label, score, maxScore }) {
-  const pct = Math.round((score / maxScore) * 100);
+  const pct = Math.min(100, Math.round((score / maxScore) * 100));
   const color = pct >= 80 ? '#22c55e' : pct >= 55 ? '#f59e0b' : '#ef4444';
 
   return (
