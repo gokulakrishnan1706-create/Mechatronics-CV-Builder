@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Homepage from './components/Homepage';
 import BuilderWorkspace from './components/BuilderWorkspace';
@@ -9,7 +9,7 @@ import PartTimeCVGenerator from './components/PartTimeCVGenerator';
 import AuthModal from './components/AuthModal';
 import UserMenu from './components/UserMenu';
 import SavedCVs from './components/SavedCVs';
-import ATSScoreChecker from './components/ATSScoreChecker';
+const ATSScoreChecker = lazy(() => import('./components/ATSScoreChecker'));
 import initialResumeData from './data/resumeData.json';
 import { supabase, saveCV } from './services/supabase';
 
@@ -47,6 +47,11 @@ function App() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
+
+    // Check for ATS route on mount
+    if (window.location.pathname === '/ats' || window.location.hash === '#ats') {
+      setView('ats');
+    }
 
     return () => subscription.unsubscribe();
   }, []);
@@ -178,12 +183,7 @@ function App() {
     window.scrollTo(0, 0);
   };
 
-  // ─── ATS route ───
-  const currentPath = window.location.pathname;
-  const currentHash = window.location.hash;
-  if (currentPath === '/ats' || currentHash === '#ats') {
-    return <ATSScoreChecker />;
-  }
+
 
   return (
     <div className="min-h-screen bg-aura-surface font-sans text-aura-dark selection:bg-aura-primary/20 selection:text-aura-primary relative">
@@ -267,20 +267,26 @@ function App() {
               initialTemplate={selectedTemplate}
             />
           </motion.div>
-        ) : (
-          <motion.div key="smartcv" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }}>
-            <SmartCV
-              onBack={() => setView('home')}
-              resumeData={resumeData}
-              onUpdate={handleDataUpdate}
-              onTailor={handleTailor}
-              aiFeed={aiFeed}
-              matchScore={matchScore}
-              missingKeywords={missingKeywords}
-              extraMetrics={extraMetrics}
-            />
-          </motion.div>
-        )}
+          ) : view === 'ats' ? (
+            <motion.div key="ats" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }}>
+              <Suspense fallback={<div className="min-h-screen bg-aura-surface flex items-center justify-center text-aura-primary font-bold">Loading AI Engine...</div>}>
+                <ATSScoreChecker />
+              </Suspense>
+            </motion.div>
+          ) : (
+            <motion.div key="smartcv" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }}>
+              <SmartCV
+                onBack={() => setView('home')}
+                resumeData={resumeData}
+                onUpdate={handleDataUpdate}
+                onTailor={handleTailor}
+                aiFeed={aiFeed}
+                matchScore={matchScore}
+                missingKeywords={missingKeywords}
+                extraMetrics={extraMetrics}
+              />
+            </motion.div>
+          )}
       </AnimatePresence>
 
       {/* Part-Time CV Generator — Full-screen Overlay */}
