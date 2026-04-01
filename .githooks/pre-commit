@@ -1,0 +1,36 @@
+#!/bin/sh
+# Pre-commit hook: block commits that contain secrets
+
+SECRETS_PATTERN='VITE_[A-Z_]*KEY=(?!your_)[^\s]+|sk-[a-zA-Z0-9]{20,}|gsk_[a-zA-Z0-9]{20,}|AIzaSy[a-zA-Z0-9_-]{33}|sb_publishable_[a-zA-Z0-9_-]+'
+
+# Files to never commit
+BLOCKED_FILES=".env .env.local .env.production .env.development"
+
+FAILED=0
+
+# 1. Block specific secret files
+for f in $BLOCKED_FILES; do
+  if git diff --cached --name-only | grep -qF "$f"; then
+    echo "ERROR: Blocked file staged: $f"
+    echo "       Remove it with: git reset HEAD $f"
+    FAILED=1
+  fi
+done
+
+# 2. Scan staged content for secret patterns
+STAGED_CONTENT=$(git diff --cached -U0 | grep "^+" | grep -v "^+++")
+
+if echo "$STAGED_CONTENT" | grep -qP "$SECRETS_PATTERN" 2>/dev/null; then
+  echo "ERROR: Possible API key or secret detected in staged changes."
+  echo "       Review with: git diff --cached"
+  echo "       If this is a false positive, use: git commit --no-verify"
+  FAILED=1
+fi
+
+if [ $FAILED -ne 0 ]; then
+  echo ""
+  echo "Commit blocked to protect your secrets."
+  exit 1
+fi
+
+exit 0
