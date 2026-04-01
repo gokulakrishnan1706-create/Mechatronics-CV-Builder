@@ -68,115 +68,49 @@ export const extractTextFromPDF = async (file) => {
     return fullText.trim();
 };
 
-// ── Build Groq/OpenRouter prompt from extracted text ──
-export const buildExtractionPrompt = (cvText, jd = '') => {
-    const tailorSection = jd.trim() ? `
-ALSO tailor the extracted data to this job description:
-- Write a compelling personal statement (max 60 words, no first-person, no buzzwords, ends with value proposition)
-- Rewrite bullet points with strong UK action verbs (Delivered/Led/Achieved/Drove/Built) and at least one metric per bullet
-- Weave JD keywords naturally into bullets
-- Add relevant skills from JD to skills array
-- Keep all personal details, job titles, company names, dates EXACTLY as they appear
+// ── Build extraction prompt — sector-aware (delegates to shared algorithm) ──
+export { getExtractionPrompt as buildExtractionPrompt } from './partTimeAlgorithm.js';
 
-JOB DESCRIPTION:
-${jd.substring(0, 2500)}` : '';
 
-    return `You are a UK CV data extraction expert. Extract ALL information from this CV text into the exact JSON structure below.
+// ── Structure CV text via AI — routes through aiRouter for best key+model ──
+export { callAI } from './aiRouter.js';
 
-CV TEXT:
-${cvText.substring(0, 6000)}
-${tailorSection}
-
-Return ONLY this raw JSON, no markdown, no explanation:
-{
-  "personal": { "name": "", "email": "", "phone": "", "location": "" },
-  "objective": "",
-  "skills": [],
-  "work_experience": [{ "id": 1, "company": "", "role": "", "period": "", "bullets": [] }],
-  "education": [{ "institution": "", "degree": "", "period": "" }]
-}
-
-Extraction rules:
-- Extract EVERY job, EVERY skill, EVERY education entry — miss nothing
-- Put ALL duties, responsibilities and achievements into bullets arrays as separate strings
-- If no personal statement exists in the CV, write a brief one from the person's experience
-- Skills should be individual items, not paragraphs
-- Return valid parseable JSON only`;
-};
-
-// ── Call Groq with extracted text ──
 export const structureWithGroq = async (prompt) => {
-    const groqKey = import.meta.env.VITE_GROQ_API_KEY;
-    const orKey   = import.meta.env.VITE_OPENROUTER_API_KEY;
-
-    if (!groqKey && !orKey) {
+    const { callAI, hasAnyKey } = await import('./aiRouter.js');
+    if (!hasAnyKey()) {
         throw new Error('No AI API keys found. Add VITE_GROQ_API_KEY to your .env file.');
     }
+    return callAI(prompt, 'extract');
+};
 
-    // Try Groq first
-    if (groqKey) {
-        try {
-            const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${groqKey}`,
-                },
-                body: JSON.stringify({
-                    model: 'openai/gpt-oss-120b',
-                    messages: [{ role: 'user', content: prompt }],
-                    temperature: 0.2,
-                    max_tokens: 3000,
-                    response_format: { type: 'json_object' },
-                }),
-            });
+// ── Entity sanitiser — strips HTML entities from AI output ──
+const decodeEntities = (str) => {
+    if (typeof str !== 'string') return str;
+    return str
+        .replace(/&amp;/gi, '&')
+        .replace(/&ndash;/gi, '-')
+        .replace(/&mdash;/gi, '-')
+        .replace(/&rsquo;/gi, "'")
+        .replace(/&lsquo;/gi, "'")
+        .replace(/&rdquo;/gi, '"')
+        .replace(/&ldquo;/gi, '"')
+        .replace(/&nbsp;/gi, ' ')
+        .replace(/&#39;/gi, "'")
+        .replace(/&lt;/gi, '<')
+        .replace(/&gt;/gi, '>')
+        .replace(/<[^>]*>/g, '')
+        .replace(/&[a-zA-Z0-9#]+;/gi, '');
+};
 
-            if (res.ok) {
-                const data = await res.json();
-                console.log('[pdfExtract] Structured via Groq ✓');
-                return data.choices[0].message.content;
-            }
-
-            const errData = await res.json().catch(() => ({}));
-            if (res.status !== 429) {
-                throw new Error(`Groq error ${res.status}: ${errData?.error?.message || 'Unknown'}`);
-            }
-            console.warn('[pdfExtract] Groq rate limited, trying OpenRouter...');
-        } catch (err) {
-            if (!err.message.includes('rate') && !err.message.includes('429')) throw err;
-            console.warn('[pdfExtract] Groq failed:', err.message);
-        }
+const sanitiseDeep = (obj) => {
+    if (typeof obj === 'string') return decodeEntities(obj);
+    if (Array.isArray(obj)) return obj.map(sanitiseDeep);
+    if (obj && typeof obj === 'object') {
+        return Object.fromEntries(
+            Object.entries(obj).map(([k, v]) => [k, sanitiseDeep(v)])
+        );
     }
-
-    // Fallback: OpenRouter
-    if (orKey) {
-        const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${orKey}`,
-                'HTTP-Referer': 'https://gokulcv.app',
-                'X-Title': 'GokulCV',
-            },
-            body: JSON.stringify({
-                model: 'meta-llama/llama-3.3-70b-instruct:free',
-                messages: [{ role: 'user', content: prompt }],
-                temperature: 0.2,
-                max_tokens: 3000,
-            }),
-        });
-
-        if (res.ok) {
-            const data = await res.json();
-            console.log('[pdfExtract] Structured via OpenRouter ✓');
-            return data.choices[0].message.content;
-        }
-
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(`OpenRouter error ${res.status}: ${errData?.error?.message || 'Unknown'}`);
-    }
-
-    throw new Error('All providers failed. Check your API keys.');
+    return obj;
 };
 
 // ── Parse JSON response safely ──
@@ -184,6 +118,10 @@ export const parseExtractedJSON = (raw) => {
     const clean = raw.replace(/```json|```/g, '').trim();
     const start = clean.indexOf('{');
     const end   = clean.lastIndexOf('}');
-    if (start === -1) throw new Error('No JSON found in AI response. Please try again.');
-    return JSON.parse(clean.substring(start, end + 1));
+    if (start === -1 || end === -1 || end < start) throw new Error('No JSON found in AI response. Please try again.');
+    try {
+        return sanitiseDeep(JSON.parse(clean.substring(start, end + 1)));
+    } catch {
+        throw new Error('AI response contained malformed JSON. Please try again.');
+    }
 };

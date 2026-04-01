@@ -38,9 +38,29 @@ export const onAuthChange = (callback) =>
 
 // ── Saved CVs ─────────────────────────────────────────────────────────────
 
-export const saveCV = async ({ title, sector, cvData, atsScore = null, atsJobType = null, atsSector = null }) => {
+export const saveCV = async ({ title, sector, cvData, atsScore = null, atsJobType = null, atsSector = null, savedCvId = null }) => {
   const user = await getUser();
   if (!user) throw new Error('Not logged in');
+
+  if (savedCvId) {
+    const { data, error } = await supabase
+      .from('saved_cvs')
+      .update({
+        title,
+        sector,
+        cv_data: cvData,
+        ats_score: atsScore,
+        ats_job_type: atsJobType,
+        ats_sector: atsSector,
+      })
+      .eq('id', savedCvId)
+      .eq('user_id', user.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
 
   const { data, error } = await supabase
     .from('saved_cvs')

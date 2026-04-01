@@ -124,7 +124,8 @@ const TemplatePicker = ({ onConfirm, onBack }) => {
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
             {/* Header */}
-            <div className="bg-white border-b border-slate-200 px-8 py-5 flex items-center justify-between">
+            <div className="bg-white border-b border-slate-200 px-8 py-5 flex items-center gap-4">
+                <button onClick={onBack} className="text-sm text-slate-500 hover:text-slate-900 px-4 py-2 rounded-lg hover:bg-slate-100 transition-colors shrink-0">← Back</button>
                 <div>
                     <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
                         <Sparkles className="w-5 h-5 text-brand-primary" />
@@ -132,7 +133,6 @@ const TemplatePicker = ({ onConfirm, onBack }) => {
                     </h1>
                     <p className="text-sm text-slate-500 mt-0.5">Select a style — you can switch any time inside the builder</p>
                 </div>
-                <button onClick={onBack} className="text-sm text-slate-500 hover:text-slate-900 px-4 py-2 rounded-lg hover:bg-slate-100 transition-colors">← Back</button>
             </div>
 
             {/* Template Grid */}

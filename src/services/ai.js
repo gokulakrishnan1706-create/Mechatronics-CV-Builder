@@ -69,6 +69,17 @@ UK ENGLISH:
 - Currency: £ not $
 - Dates: "Jan 2024 – Present" format
 
+COMPOUND WORDS:
+- Never fuse compound words or phrases into single words. Always preserve spaces and hyphens exactly as standard UK English requires.
+- WRONG: healthandsafety, safetycritical, fastpaced, handson, firsttime
+- RIGHT: health and safety, safety-critical, fast-paced, hands-on, first-time
+
+HYPHENS:
+- Always hyphenate compound modifiers before nouns (safety-critical, health-and-safety, first-time, closed-loop, fast-paced, high-voltage)
+- Always hyphenate fused technical compounds (pressure-cycling, root-cause, start-up, cross-functional)
+- Preserve all hyphens in model numbers and standards references (S7-1200, IEC 62061, ISO 13849)
+- Never fuse two words that should be hyphenated into a single word. Examples: safety-critical, fast-paced, hands-on, first-time, closed-loop, real-time, root-cause, start-up, pressure-cycling, cross-functional
+
 PERSONAL STATEMENT RULES:
 - Max 60 words, 3 sentences maximum
 - Structure: [Who you are] + [What you bring] + [Value to this employer]
@@ -105,7 +116,7 @@ const callGroq = async (messages, systemPrompt) => {
             'Authorization': `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-            model: 'openai/gpt-oss-120b',
+            model: 'llama-3.3-70b-versatile',
             messages: [{ role: 'system', content: systemPrompt }, ...messages],
             temperature: 0.4,
             max_tokens: 4096,
@@ -181,14 +192,46 @@ const callAI = async (messages, systemPrompt) => {
 };
 
 // ─────────────────────────────────────────────────────────────
+// ENTITY SANITISER — strips HTML entities from AI output
+// ─────────────────────────────────────────────────────────────
+export const decodeEntities = (str) => {
+    if (typeof str !== 'string') return str;
+    return str
+        .replace(/&amp;/gi, '&')
+        .replace(/&ndash;/gi, '-')
+        .replace(/&mdash;/gi, '-')
+        .replace(/&rsquo;/gi, "'")
+        .replace(/&lsquo;/gi, "'")
+        .replace(/&rdquo;/gi, '"')
+        .replace(/&ldquo;/gi, '"')
+        .replace(/&nbsp;/gi, ' ')
+        .replace(/&#39;/gi, "'")
+        .replace(/&lt;/gi, '<')
+        .replace(/&gt;/gi, '>')
+        .replace(/<[^>]*>/g, '')
+        .replace(/&[a-zA-Z0-9#]+;/gi, '');
+};
+
+export const sanitiseDeep = (obj) => {
+    if (typeof obj === 'string') return decodeEntities(obj);
+    if (Array.isArray(obj)) return obj.map(sanitiseDeep);
+    if (obj && typeof obj === 'object') {
+        return Object.fromEntries(
+            Object.entries(obj).map(([k, v]) => [k, sanitiseDeep(v)])
+        );
+    }
+    return obj;
+};
+
+// ─────────────────────────────────────────────────────────────
 // JSON PARSER
 // ─────────────────────────────────────────────────────────────
 const parseJSON = (text) => {
     const clean = text.replace(/```json|```/g, '').trim();
     const start = clean.indexOf('{');
     const end   = clean.lastIndexOf('}');
-    if (start === -1) throw new Error('AI returned no JSON. Please try again.');
-    return JSON.parse(clean.substring(start, end + 1));
+    if (start === -1 || end === -1 || end < start) throw new Error('AI returned no JSON. Please try again.');
+    return sanitiseDeep(JSON.parse(clean.substring(start, end + 1)));
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -214,7 +257,10 @@ Return this exact JSON structure — no other text:
     "achievements": ["Verb-led bullet with metric", "Another bullet"]
   }],
   "extra_curricular": [{ "role": "", "organization": "", "period": "", "bullets": [""] }]
-}`;
+}
+
+Ensure all text values contain proper spacing between words.
+Never concatenate words that should be separate or hyphenated.`;
 
     const userMessage = `MASTER CV DATA:\n${JSON.stringify(resumeData)}\n\nTARGET JOB DESCRIPTION:\n${jobDescription.substring(0, 6000)}\n\nApply the CV Writing Algorithm fully. Return raw JSON only.`;
 

@@ -28,7 +28,15 @@ export default function Homepage({ onStartBuilding, onStartSmartCV, onStartPartT
         { q: "Can I edit the AI-generated content?", a: "Yes, the Builder Workspace gives you complete control to tweak, revert, or regenerate any section before final export." }
     ];
 
-    const companies = ['Tesla', 'SpaceX', 'Boston Dynamics', 'Rivian', 'Apple', 'Anduril', 'NVIDIA'];
+    const companies = [
+        { name: 'Tesla', iconUrl: 'https://cdn.simpleicons.org/tesla/94a3b8' },
+        { name: 'SpaceX', iconUrl: 'https://cdn.simpleicons.org/spacex/94a3b8' },
+        { name: 'Boston Dynamics', iconUrl: 'https://cdn.simpleicons.org/bostonscientific/94a3b8' },
+        { name: 'Rivian', iconUrl: 'https://cdn.simpleicons.org/rivian/94a3b8' },
+        { name: 'Apple', iconUrl: 'https://cdn.simpleicons.org/apple/94a3b8' },
+        { name: 'Anduril', iconUrl: 'https://cdn.simpleicons.org/shield/94a3b8' },
+        { name: 'NVIDIA', iconUrl: 'https://cdn.simpleicons.org/nvidia/94a3b8' }
+    ];
 
     return (
         <div className="min-h-screen bg-brand-bg text-brand-text font-sans selection:bg-brand-primary/20 selection:text-brand-text overflow-x-hidden">
@@ -45,17 +53,9 @@ export default function Homepage({ onStartBuilding, onStartSmartCV, onStartPartT
                 {/* Logo Section */}
                 <div className="flex flex-col mb-4 md:mb-0">
                     <div className="flex items-center gap-3">
-                        {/* Mockup Style Icon */}
-                        <div className="relative w-10 h-10 group">
-                            {/* Back page (shadow/accent) */}
-                            <div className="absolute top-0 right-0 w-8 h-9 rounded-md bg-brand-primary/20 border border-brand-primary/30 transform rotate-6 drop-shadow-sm transition-transform group-hover:rotate-12"></div>
-                            {/* Front page (main document) */}
-                            <div className="absolute bottom-0 left-0 w-8 h-9 bg-white border border-slate-200 shadow-md rounded-md flex flex-col p-1.5 gap-1 z-10">
-                                <div className="w-full h-1.5 bg-brand-primary/20 rounded-sm"></div>
-                                <div className="w-[80%] h-1 bg-slate-100 rounded-sm"></div>
-                                <div className="w-[60%] h-1 bg-slate-100 rounded-sm mt-0.5"></div>
-                                <Sparkles className="absolute -bottom-1 -right-1 w-4 h-4 text-brand-primary drop-shadow-[0_0_2px_rgba(59,130,246,0.5)] bg-white rounded-full" />
-                            </div>
+                        {/* 3D Mockup Icon */}
+                        <div className="relative w-12 h-12 flex-shrink-0">
+                            <img src="/logo-3d.png" alt="Gokul CV 3D Logo" className="w-full h-full object-contain drop-shadow-md" />
                         </div>
                         <span className="text-xl font-bold tracking-tight ml-1">
                             <span className="bg-gradient-to-r from-slate-900 via-slate-700 to-slate-900 bg-clip-text text-transparent">Gokul</span>
@@ -76,7 +76,7 @@ export default function Homepage({ onStartBuilding, onStartSmartCV, onStartPartT
                         onClick={() => window.location.href = '/ats'}
                         className="text-sm font-semibold tracking-wide text-brand-primary bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-5 py-2.5 rounded-full transition-all active:scale-95 shadow-sm hidden sm:flex items-center gap-2"
                     >
-                        🎯 ATS Score Checker
+                        <Target className="w-4 h-4" /> ATS Score Checker
                     </button>
                     <button
                         onClick={onStartBuilding}
@@ -159,11 +159,11 @@ export default function Homepage({ onStartBuilding, onStartSmartCV, onStartPartT
                             onClick={onStartBuilding}
                             className="bg-brand-text hover:bg-slate-800 text-white font-medium rounded-full px-8 py-3.5 flex items-center transition-all shadow-md active:scale-95 text-lg"
                         >
-                            Launch Engine
+                            Build Full-Time CV
                             <ArrowRight className="w-5 h-5 ml-2" />
                         </button>
                         <button
-                            onClick={() => window.location.href = '/builder'}
+                            onClick={onStartPartTime}
                             className="bg-white border text-indigo-700 border-indigo-200 hover:bg-indigo-50 font-medium rounded-full px-8 py-3.5 flex items-center transition-all shadow-md active:scale-95 text-lg"
                         >
                             🚀 Build Part-Time CV
@@ -328,14 +328,26 @@ export default function Homepage({ onStartBuilding, onStartSmartCV, onStartPartT
                 <div className="flex overflow-hidden group">
                     <div className="flex space-x-12 md:space-x-24 animate-loop-scroll group-hover:paused">
                         {companies.map((company, num) => (
-                            <div key={num} className="text-slate-400 hover:text-brand-primary transition-colors font-bold text-xl md:text-2xl flex items-center justify-center min-w-[140px] tracking-tight">
-                                {company}
+                            <div key={num} className="text-slate-400 hover:text-brand-primary transition-colors font-bold text-xl md:text-2xl flex items-center justify-center min-w-[140px] tracking-tight gap-3">
+                                <img 
+                                    src={company.iconUrl} 
+                                    alt={company.name} 
+                                    className="h-6 w-6 object-contain opacity-60 group-hover:opacity-100 transition-opacity"
+                                    onError={(e) => { e.target.style.display = 'none'; }} 
+                                />
+                                {company.name}
                             </div>
                         ))}
                         {/* Duplicate for seamless scroll */}
                         {companies.map((company, num) => (
-                            <div key={`dup-${num}`} className="text-slate-400 hover:text-brand-primary transition-colors font-bold text-xl md:text-2xl flex items-center justify-center min-w-[140px] tracking-tight">
-                                {company}
+                            <div key={`dup-${num}`} className="text-slate-400 hover:text-brand-primary transition-colors font-bold text-xl md:text-2xl flex items-center justify-center min-w-[140px] tracking-tight gap-3">
+                                <img 
+                                    src={company.iconUrl} 
+                                    alt={company.name} 
+                                    className="h-6 w-6 object-contain opacity-60 group-hover:opacity-100 transition-opacity"
+                                    onError={(e) => { e.target.style.display = 'none'; }} 
+                                />
+                                {company.name}
                             </div>
                         ))}
                     </div>
@@ -534,9 +546,9 @@ export default function Homepage({ onStartBuilding, onStartSmartCV, onStartPartT
                         className="grid md:grid-cols-3 gap-6"
                     >
                         {[
-                            { quote: "The AI didn't just add keywords, it completely rewrote my achievements to sound like a senior executive.", name: "Sarah J.", role: "Senior Product Manager" },
-                            { quote: "Highest ATS match score I've ever gotten. Landed 4 interviews in the first week of using the generated PDF.", name: "Michael T.", role: "Lead Software Engineer" },
-                            { quote: "Finally, a resume builder that treats you like a professional. The IDE-style interface is a game changer.", name: "Elena R.", role: "Data Scientist" }
+                            { quote: "The AI didn't just add keywords, it completely rewrote my achievements to sound like a senior executive.", name: "Jithin Viji Paul", role: "Senior Product Manager", image: "/avatar_jithin.png" },
+                            { quote: "Highest ATS match score I've ever gotten. Landed 4 interviews in the first week of using the generated PDF.", name: "Ernest Benny Alex", role: "Lead Software Engineer", image: "/avatar_ernest.png" },
+                            { quote: "Finally, a resume builder that treats you like a professional. The IDE-style interface is a game changer.", name: "Elena R.", role: "Data Scientist", image: "/avatar_elena.png" }
                         ].map((t, idx) => (
                             <motion.div key={idx} variants={fadeUp} className="bg-slate-50 border border-slate-200 rounded-2xl p-8 flex flex-col justify-between">
                                 <div>
@@ -546,9 +558,7 @@ export default function Homepage({ onStartBuilding, onStartSmartCV, onStartPartT
                                     <p className="text-slate-700 leading-relaxed mb-8 text-sm italic">"{t.quote}"</p>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center border border-blue-200">
-                                        <Users className="w-5 h-5 text-brand-primary" />
-                                    </div>
+                                    <img src={t.image} alt={t.name} className="w-10 h-10 rounded-full object-cover border-2 border-brand-primary/20 shadow-sm" />
                                     <div>
                                         <h4 className="font-bold text-brand-text text-sm">{t.name}</h4>
                                         <p className="text-xs text-brand-muted">{t.role}</p>
@@ -563,29 +573,31 @@ export default function Homepage({ onStartBuilding, onStartSmartCV, onStartPartT
             {/* ─── PART-TIME CV SECTION ─── */}
             <section id="parttime" className="py-24 px-6 relative z-10 bg-gradient-to-b from-white to-slate-50 border-t border-brand-border">
                 <div className="max-w-5xl mx-auto">
-                    <motion.div initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="text-center mb-14">
-                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-pink-50 border border-pink-100 text-pink-600 text-sm font-medium mb-6">
-                            <Star className="w-4 h-4" /> Part-Time & Flexible Work
+                    <motion.div initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="text-center mb-16">
+                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-brand-primary/20 text-brand-primary text-xs font-bold tracking-widest uppercase mb-6 shadow-sm">
+                            <Zap className="w-3.5 h-3.5" /> Specialized Modules
                         </div>
-                        <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-brand-text">
-                            Need a CV for a <span className="text-brand-primary">part-time role?</span>
+                        <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-6 text-brand-text">
+                            Need a CV for a <span className="bg-clip-text text-transparent bg-gradient-to-r from-brand-primary to-brand-accent">part-time role?</span>
                         </h2>
-                        <p className="text-brand-muted text-base max-w-xl mx-auto">
-                            Separate dedicated generator for Warehouse, Care Home, and Freelance CVs. Fill in a simple form, hit AI Polish, download in seconds.
+                        <p className="text-brand-muted text-lg max-w-2xl mx-auto font-light leading-relaxed">
+                            Separate dedicated synthesizer for Warehouse, Care Home, and Freelance CVs. Provide basic details, trigger AI alignment, and export instantly.
                         </p>
                     </motion.div>
 
-                    <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                    <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
                         {[
-                            { icon: '📦', label: 'Warehouse & Logistics', desc: 'Forklift, pick-pack, stock control, H&S compliance', color: 'from-amber-50 to-orange-50', border: 'border-amber-200', badge: 'bg-amber-100 text-amber-700' },
-                            { icon: '🤝', label: 'Care Home & Support', desc: 'Personal care, safeguarding, dementia awareness, DBS', color: 'from-pink-50 to-rose-50', border: 'border-pink-200', badge: 'bg-pink-100 text-pink-700' },
-                            { icon: '💼', label: 'Freelance & Gig Work', desc: 'Self-employed, flexible contracts, client comms', color: 'from-violet-50 to-purple-50', border: 'border-violet-200', badge: 'bg-violet-100 text-violet-700' },
+                            { icon: <Layout className="w-6 h-6 text-brand-primary" />, label: 'Warehouse & Logistics', desc: 'Forklift, pick-pack, stock control, H&S compliance', border: 'border-slate-200 hover:border-brand-primary/50', badge: 'text-brand-primary bg-blue-50 border border-blue-100' },
+                            { icon: <Shield className="w-6 h-6 text-emerald-500" />, label: 'Care & Support', desc: 'Personal care, safeguarding, dementia awareness, DBS', border: 'border-slate-200 hover:border-emerald-500/50', badge: 'text-emerald-600 bg-emerald-50 border border-emerald-100' },
+                            { icon: <FileText className="w-6 h-6 text-brand-accent" />, label: 'Freelance & Gig', desc: 'Self-employed, flexible contracts, client comms', border: 'border-slate-200 hover:border-brand-accent/50', badge: 'text-brand-accent bg-indigo-50 border border-indigo-100' },
                         ].map((item, i) => (
-                            <motion.div key={i} variants={fadeUp} className={`bg-gradient-to-br ${item.color} border ${item.border} rounded-2xl p-6 shadow-sm hover:shadow-md transition-all`}>
-                                <div className="text-3xl mb-3">{item.icon}</div>
-                                <h3 className="font-bold text-brand-text text-base mb-2">{item.label}</h3>
-                                <p className="text-sm text-brand-muted mb-4 leading-relaxed">{item.desc}</p>
-                                <span className={`inline-block text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${item.badge}`}>Supported</span>
+                            <motion.div key={i} variants={fadeUp} className={`bg-white border ${item.border} rounded-3xl p-8 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all duration-300 group`}>
+                                <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center mb-6 border border-slate-100 group-hover:scale-110 group-hover:bg-white transition-all duration-300 shadow-sm">
+                                    {item.icon}
+                                </div>
+                                <h3 className="font-bold text-brand-text text-xl mb-3 tracking-tight">{item.label}</h3>
+                                <p className="text-base text-brand-muted mb-6 leading-relaxed bg-transparent">{item.desc}</p>
+                                <span className={`inline-block text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full shadow-sm ${item.badge}`}>Supported</span>
                             </motion.div>
                         ))}
                     </motion.div>
@@ -593,11 +605,11 @@ export default function Homepage({ onStartBuilding, onStartSmartCV, onStartPartT
                     <motion.div initial={{ opacity: 0, scale: 0.97 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="flex justify-center">
                         <button
                             onClick={onStartPartTime}
-                            className="inline-flex items-center gap-3 bg-brand-text hover:bg-slate-700 text-white font-bold py-4 px-10 rounded-xl shadow-lg transition-all active:scale-95 text-base"
+                            className="inline-flex items-center gap-3 bg-brand-primary hover:bg-blue-700 text-white font-medium py-4 px-10 rounded-full shadow-lg hover:shadow-xl transition-all active:scale-95 text-lg"
                         >
-                            <Zap className="w-5 h-5 text-amber-400" />
-                            Open Part-Time CV Generator
-                            <ArrowRight className="w-5 h-5" />
+                            <Star className="w-5 h-5 text-blue-100" />
+                            Open Part-Time CV Mode
+                            <ArrowRight className="w-5 h-5 ml-2 text-white" />
                         </button>
                     </motion.div>
                 </div>
@@ -684,10 +696,14 @@ export default function Homepage({ onStartBuilding, onStartSmartCV, onStartPartT
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-10 mb-16">
                         <div className="col-span-2">
                             <div className="flex items-center gap-2 mb-6">
-                                <div className="w-8 h-8 rounded-lg bg-brand-primary flex items-center justify-center shadow-sm">
-                                    <Sparkles className="w-4 h-4 text-white" />
+                                <div className="relative w-10 h-10 flex-shrink-0">
+                                    <img src="/logo-3d.png" alt="Gokul CV 3D" className="w-full h-full object-contain drop-shadow-sm" />
                                 </div>
-                                <span className="font-bold text-xl text-brand-text">Gokul CV</span>
+                                <span className="text-lg font-bold tracking-tight">
+                                    <span className="bg-gradient-to-r from-slate-900 via-slate-700 to-slate-900 bg-clip-text text-transparent">Gokul</span>
+                                    <span className="text-brand-primary font-black ml-[2px]">CV</span>
+                                    <span className="text-brand-primary tracking-tighter">.</span>
+                                </span>
                             </div>
                             <p className="text-slate-500 text-sm leading-relaxed max-w-xs mb-6">
                                 Premium AI-driven resume synthesis for the modern executive. Built for high-impact resonance and flawless ATS parsing.
@@ -729,10 +745,10 @@ export default function Homepage({ onStartBuilding, onStartSmartCV, onStartPartT
                         <p className="text-slate-500 text-xs text-center md:text-left">© {new Date().getFullYear()} Gokulakrishnan Balaiya. All rights reserved.</p>
                         <div className="flex items-center gap-2 text-xs text-slate-500 bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-sm">
                             <span>Status:</span>
-                            <div className="w-2 h-2 rounded-full bg-emerald-500 relative">
-                                <div className="absolute inset-0 rounded-full bg-emerald-500 animate-ping opacity-75"></div>
+                            <div className="w-2 h-2 rounded-full bg-amber-500 relative">
+                                <div className="absolute inset-0 rounded-full bg-amber-500 animate-ping opacity-75"></div>
                             </div>
-                            <span className="text-emerald-600 font-medium">All Systems Operational</span>
+                            <span className="text-amber-600 font-medium">Beta Testing Live</span>
                         </div>
                     </div>
                 </div>

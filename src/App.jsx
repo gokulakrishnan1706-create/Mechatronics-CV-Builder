@@ -12,6 +12,7 @@ import SavedCVs from './components/SavedCVs';
 const ATSScoreChecker = lazy(() => import('./components/ATSScoreChecker'));
 import initialResumeData from './data/resumeData.json';
 import { supabase, saveCV } from './services/supabase';
+import { sanitiseDeep } from './services/ai';
 
 function App() {
   // 'home' | 'templatepicker' | 'builder' | 'smartcv' | 'parttime'
@@ -30,7 +31,7 @@ function App() {
   // ─── Resume state ───
   const [resumeData, setResumeData] = useState(() => {
     const saved = localStorage.getItem('aura_resume_cache');
-    return saved ? JSON.parse(saved) : initialResumeData;
+    return saved ? sanitiseDeep(JSON.parse(saved)) : initialResumeData;
   });
 
   const [aiFeed, setAiFeed] = useState([]);
@@ -58,7 +59,7 @@ function App() {
 
   // Auto-Save: Sync state to localStorage
   useEffect(() => {
-    localStorage.setItem('aura_resume_cache', JSON.stringify(resumeData));
+    localStorage.setItem('aura_resume_cache', JSON.stringify(sanitiseDeep(resumeData)));
   }, [resumeData]);
 
   const handleDataUpdate = (path, value) => {
@@ -120,7 +121,12 @@ function App() {
         ? `${resumeData.personal.name} CV`
         : activeCvTitle;
 
-      const result = await saveCV(resumeData, title, activeCvId);
+      const result = await saveCV({
+        title,
+        sector: resumeData.personal?.sector || null,
+        cvData: resumeData,
+        savedCvId: activeCvId || null,
+      });
       setActiveCvId(result.id);
       setActiveCvTitle(result.title);
       setSaveStatus('saved');
@@ -137,7 +143,7 @@ function App() {
     setResumeData(data);
     setActiveCvId(id);
     setActiveCvTitle(title);
-    localStorage.setItem('aura_resume_cache', JSON.stringify(data));
+    localStorage.setItem('aura_resume_cache', JSON.stringify(sanitiseDeep(data)));
   };
 
   const handleTailor = async (jd) => {

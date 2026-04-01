@@ -2,6 +2,7 @@
 import React, { useRef, useState, useMemo } from 'react';
 
 import { ArrowLeft, Download, Loader2, ChevronDown, FileIcon, FileType, RotateCcw, Settings, Target, Command, ZoomIn, ZoomOut, FileText, CheckCircle } from 'lucide-react';
+import { saveAs } from 'file-saver';
 import { generatePDF } from '../services/PDFTemplates';
 import DataHub from './DataHub';
 import MatchEngine from './MatchEngine';
@@ -59,38 +60,24 @@ const BuilderWorkspace = ({ resumeData, onUpdate, onTailor, onReset, aiFeed, mat
 
         // Clean up after delay — 10s ensures download has started
         setTimeout(() => {
-            document.body.removeChild(a);
+            if (document.body.contains(a)) document.body.removeChild(a);
             URL.revokeObjectURL(url);
         }, 10000);
     };
 
     const handleDownloadPDF = async () => {
         setIsDownloading(true);
-        setShowDropdown(false);
         setDownloadSuccess(false);
-
         try {
-            const filename = getSafeFilename('pdf');
-
-            // Generate true vector PDF — selectable text, ATS-friendly, perfect page breaks
+            const name = resumeData?.personal?.name || 'CV';
+            const filename = `${name}_GokulCV.pdf`.replace(/[^a-zA-Z0-9_\-.]/g, '_');
             const blob = await generatePDF(resumeData, activeTemplate);
-
-            // Bulletproof Chrome download
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            a.rel = 'noopener';
-            a.style.display = 'none';
-            document.body.appendChild(a);
-            a.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
-            setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 10000);
-
+            saveAs(blob, filename); // file-saver handles all Chrome/Edge blob download quirks
             setDownloadSuccess(true);
             setTimeout(() => setDownloadSuccess(false), 3000);
-        } catch (error) {
-            console.error('[PDF] Error:', error);
-            alert('PDF generation failed: ' + error.message);
+        } catch (err) {
+            console.error('[PDF]', err);
+            alert('PDF export failed: ' + err.message);
         } finally {
             setTimeout(() => setIsDownloading(false), 1500);
         }
@@ -99,13 +86,19 @@ const BuilderWorkspace = ({ resumeData, onUpdate, onTailor, onReset, aiFeed, mat
     const handleDownloadWord = () => {
         setShowDropdown(false);
         setDownloadSuccess(false);
-        const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Export HTML to Word Document</title></head><body>";
-        const footer = "</body></html>";
-        const sourceHTML = header + cvRef.current.innerHTML + footer;
-        const blob = new Blob(['\ufeff', sourceHTML], { type: 'application/msword' });
-        downloadBlob(blob, getSafeFilename('doc'));
-        setDownloadSuccess(true);
-        setTimeout(() => setDownloadSuccess(false), 3000);
+        if (!cvRef.current) { alert('CV preview not ready. Please wait.'); return; }
+        try {
+            const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Export HTML to Word Document</title></head><body>";
+            const footer = "</body></html>";
+            const sourceHTML = header + cvRef.current.innerHTML + footer;
+            const blob = new Blob(['\ufeff', sourceHTML], { type: 'application/msword' });
+            downloadBlob(blob, getSafeFilename('doc'));
+            setDownloadSuccess(true);
+            setTimeout(() => setDownloadSuccess(false), 3000);
+        } catch (err) {
+            console.error('[Word]', err);
+            alert('Word export failed: ' + err.message);
+        }
     };
 
     const zoomIn = () => setZoom(prev => Math.min(prev + 10, 150));
